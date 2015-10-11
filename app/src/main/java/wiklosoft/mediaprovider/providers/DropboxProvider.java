@@ -34,6 +34,10 @@ public class DropboxProvider extends OAuthProvider {
     public DropboxProvider(Context context){
         super("dropbox", context);
         mContext = context;
+        AUTH_URL = "https://www.dropbox.com/1/oauth2/authorize";
+        TOKEN_URL = "https://api.dropbox.com/1/oauth2/token";
+        CLIENT_ID = "bvyu7eknqot0rkl";
+        CLIENT_SECRET = "u4an3qd7gkkmjo9";
     }
 
     @Override
@@ -133,10 +137,7 @@ public class DropboxProvider extends OAuthProvider {
 
         @Override
         public void init(){
-            AUTH_URL = "https://www.dropbox.com/1/oauth2/authorize";
-            TOKEN_URL = "https://api.dropbox.com/1/oauth2/token";
-            CLIENT_ID = "bvyu7eknqot0rkl";
-            CLIENT_SECRET = "u4an3qd7gkkmjo9";
+
             super.init();
         }
     }

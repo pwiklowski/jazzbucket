@@ -34,6 +34,10 @@ public class GoogleDriveProvider extends OAuthProvider {
     public GoogleDriveProvider(Context context){
         super("googledrive", context);
         mContext = context;
+        AUTH_URL = "https://accounts.google.com/o/oauth2/auth";
+        TOKEN_URL = "hhttps://accounts.google.com/oauth2/v3/token";
+        CLIENT_ID = "94210570259-ltnois2uoourqqcgic7ptqr7cv0gpumc.apps.googleusercontent.com";
+        CLIENT_SECRET = "OCOC95FB_Sha140EhSj2fMYJ";
     }
 
     @Override
@@ -156,10 +160,7 @@ public class GoogleDriveProvider extends OAuthProvider {
 
         @Override
         public void init(){
-            AUTH_URL = "https://accounts.google.com/o/oauth2/auth";
-            TOKEN_URL = "hhttps://accounts.google.com/oauth2/v3/token";
-            CLIENT_ID = "94210570259-ltnois2uoourqqcgic7ptqr7cv0gpumc.apps.googleusercontent.com";
-            CLIENT_SECRET = "OCOC95FB_Sha140EhSj2fMYJ";
+
             super.init();
         }
     }

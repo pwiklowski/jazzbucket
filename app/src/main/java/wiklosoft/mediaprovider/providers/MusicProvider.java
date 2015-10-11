@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 
 import java.util.List;
 
+import wiklosoft.mediaprovider.MetadataReady;
 import wiklosoft.mediaprovider.MusicReady;
 
 /**
@@ -19,7 +20,7 @@ public interface MusicProvider {
     String getId();
     void getChildren(String s, MediaBrowserService.Result<List<MediaBrowser.MediaItem>> result);
     void getMediaUrl(String id, MusicReady callback);
-    MediaMetadata getMetaData(String id);
+    boolean getMetaData(String id, MetadataReady callback);
 
     Fragment getSettingsFragment();
 }

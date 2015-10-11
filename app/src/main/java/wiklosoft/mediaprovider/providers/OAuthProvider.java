@@ -22,6 +22,7 @@ import com.kodart.httpzoid.ResponseHandler;
 import java.util.ArrayList;
 import java.util.List;
 
+import wiklosoft.mediaprovider.MetadataReady;
 import wiklosoft.mediaprovider.MusicReady;
 
 
@@ -31,6 +32,25 @@ import wiklosoft.mediaprovider.MusicReady;
 public class OAuthProvider implements MusicProvider {
     protected String ID = null;
     protected Context mContext;
+
+    protected String AUTH_URL = null;
+    protected String TOKEN_URL = null;
+    protected String CLIENT_ID = null;
+    protected String CLIENT_SECRET = null;
+
+    public String getAuthUrl(){
+        return AUTH_URL;
+    }
+    public String getTokenUrl(){
+        return TOKEN_URL;
+    }
+    public String getClientId(){
+        return CLIENT_ID;
+    }
+    public String getClientSecret(){
+        return CLIENT_SECRET;
+    }
+
 
     public OAuthProvider(String id, Context context){
         ID = id;
@@ -72,9 +92,10 @@ public class OAuthProvider implements MusicProvider {
     }
 
     @Override
-    public MediaMetadata getMetaData(String id) {
-        return null;
+    public boolean getMetaData(String id, MetadataReady callback) {
+        return false;
     }
+
     @Override
     public Fragment getSettingsFragment() {
         return null;

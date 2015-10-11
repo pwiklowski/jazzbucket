@@ -105,7 +105,14 @@ public class MusicService extends MediaBrowserService{
                 @Override
                 public void ready(String url, Map<String, String> headers) {
                     try {
-                        mSession.setMetadata(getMetaData(url, headers));
+                        String providerId = mediaId.split("/")[0];
+                        MusicProvider provider = getMusicProvider(providerId);
+
+                        if (!provider.getMetaData(mediaId, mMetadataReady)) {
+                            //try generic way
+                            mSession.setMetadata(getMetaData(url, headers));
+                        }
+
 
                         mMediaPlayer.reset();
 
@@ -126,6 +133,13 @@ public class MusicService extends MediaBrowserService{
 
 
         }
+        MetadataReady mMetadataReady = new MetadataReady() {
+            @Override
+            public void ready(MediaMetadata data) {
+                mSession.setMetadata(data);
+            }
+        };
+
 
         @Override
         public void onPause() {
@@ -170,6 +184,11 @@ public class MusicService extends MediaBrowserService{
 
 
     public MediaMetadata getMetaData(String url, Map<String, String> headers) {
+
+        if (headers == null){
+            headers = new HashMap<String,String>();
+        }
+
         MediaMetadataRetriever mmr = new MediaMetadataRetriever();
         mmr.setDataSource(url, headers);
 
@@ -236,8 +255,8 @@ public class MusicService extends MediaBrowserService{
             result.sendResult(mediaItems);
         }else{
             MusicProvider p = getMusicProvider(s.split("/")[0]);
-            p.getChildren(s, result);
             result.detach();
+            p.getChildren(s, result);
         }
     }
 }

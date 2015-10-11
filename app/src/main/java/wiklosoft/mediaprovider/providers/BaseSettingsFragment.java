@@ -38,10 +38,6 @@ public class BaseSettingsFragment extends Fragment {
     private OAuthManager oauth = null;
     private Credential credential = null;
 
-    protected String AUTH_URL = null;
-    protected String TOKEN_URL = null;
-    protected String CLIENT_ID = null;
-    protected String CLIENT_SECRET = null;
 
     public BaseSettingsFragment() {
         init();
@@ -84,10 +80,10 @@ public class BaseSettingsFragment extends Fragment {
                 BearerToken.authorizationHeaderAccessMethod(),
                 AndroidHttp.newCompatibleTransport(),
                 new JacksonFactory(),
-                new GenericUrl(TOKEN_URL),
-                new ClientParametersAuthentication(CLIENT_ID, CLIENT_SECRET),
-                CLIENT_ID,
-                AUTH_URL);
+                new GenericUrl(((OAuthProvider)mProvider).getTokenUrl()),
+                new ClientParametersAuthentication(((OAuthProvider)mProvider).getClientId(), ((OAuthProvider)mProvider).getClientSecret()),
+                ((OAuthProvider)mProvider).getClientId(),
+                ((OAuthProvider)mProvider).getAuthUrl());
         builder.setCredentialStore(credentialStore);
         builder.setScopes(getScopes());
 

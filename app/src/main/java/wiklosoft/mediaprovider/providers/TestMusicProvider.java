@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import wiklosoft.mediaprovider.MainActivity;
+import wiklosoft.mediaprovider.MetadataReady;
 import wiklosoft.mediaprovider.MusicReady;
 import wiklosoft.mediaprovider.MusicService;
 import wiklosoft.mediaprovider.R;
@@ -99,7 +100,9 @@ public class TestMusicProvider implements MusicProvider {
     }
 
     @Override
-    public MediaMetadata getMetaData(String url) {
+    public boolean getMetaData(String url, MetadataReady callback) {
+
+
         MediaMetadataRetriever mmr = new MediaMetadataRetriever();
         mmr.setDataSource(url, new HashMap<String, String>());
 
@@ -109,7 +112,10 @@ public class TestMusicProvider implements MusicProvider {
         b.putLong(MediaMetadata.METADATA_KEY_DURATION, Long.parseLong(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)));
 
         mmr.release();
-        return b.build();
+        callback.ready(b.build());
+
+
+        return true;
     }
 
     @Override
