@@ -1,26 +1,34 @@
 package wiklosoft.mediaprovider;
 
-import android.app.Activity;
-
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.ActionBar;
-import android.app.Fragment;
-import android.app.FragmentManager;
+import android.content.ComponentName;
 import android.content.Context;
-import android.os.Build;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.view.Gravity;
-import android.view.LayoutInflater;
+import android.os.IBinder;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.support.v4.widget.DrawerLayout;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import wiklosoft.mediaprovider.providers.DropboxProvider;
+import wiklosoft.mediaprovider.providers.GoogleDriveProvider;
+import wiklosoft.mediaprovider.providers.MusicProvider;
 
 
-public class MainActivity extends Activity
+public class MainActivity extends FragmentActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+
+    private String TAG = "MainActivity";
+    private MusicService mMusicService = null;
+    private List<MusicProvider> mMusicProviderList = new ArrayList<>();
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -37,37 +45,58 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mNavigationDrawerFragment = (NavigationDrawerFragment)
-                getFragmentManager().findFragmentById(R.id.navigation_drawer);
+        mNavigationDrawerFragment = (NavigationDrawerFragment) getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
 
         // Set up the drawer.
-        mNavigationDrawerFragment.setUp(
-                R.id.navigation_drawer,
-                (DrawerLayout) findViewById(R.id.drawer_layout));
+        mNavigationDrawerFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
+
+        Intent i = new Intent(this, MusicService.class);
+        i.setAction("android.media.browse.MediaBrowserService");
+
+        bindService(i, mServiceConnection, Context.BIND_AUTO_CREATE);
+        startService(i);
+
     }
+    protected ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder binder) {
+            Log.d(TAG, "onServiceConnected");
+
+            mMusicService = MusicService.getService();
+            mMusicProviderList = mMusicService.getMusicProviders();
+
+
+
+            mMusicProviderList.add(new DropboxProvider(mMusicService));
+            mMusicProviderList.add(new GoogleDriveProvider(mMusicService));
+
+
+            String[] names = new String[mMusicProviderList.size()];
+            for(int i=0; i<mMusicProviderList.size();i++)
+                names[i] =mMusicProviderList.get(i).getName();
+
+            mNavigationDrawerFragment.setItems(names);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.d(TAG, "onServiceDisconnected");
+        }
+    };
+
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
-        // update the main content by replacing fragments
-        FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
-                .commit();
+        Log.d(TAG,"onNavigationDrawerItemSelected "+ position);
+        MusicProvider mp = mMusicProviderList.get(position);
+        mTitle = mp.getName();
+        getSupportFragmentManager().beginTransaction().replace(R.id.container, mp.getSettingsFragment()).commit();
     }
 
     public void onSectionAttached(int number) {
-        switch (number) {
-            case 1:
-                mTitle = getString(R.string.title_section1);
-                break;
-            case 2:
-                mTitle = getString(R.string.title_section2);
-                break;
-            case 3:
-                mTitle = getString(R.string.title_section3);
-                break;
-        }
+        if (mMusicProviderList.size() >0)
+            mTitle = mMusicProviderList.get(number).getName();
     }
 
     public void restoreActionBar() {
@@ -104,46 +133,6 @@ public class MainActivity extends Activity
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
-
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            return rootView;
-        }
-
-        @Override
-        public void onAttach(Activity activity) {
-            super.onAttach(activity);
-            ((MainActivity) activity).onSectionAttached(
-                    getArguments().getInt(ARG_SECTION_NUMBER));
-        }
     }
 
 }

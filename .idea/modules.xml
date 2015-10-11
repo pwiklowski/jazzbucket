@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/MediaProvider.iml" filepath="$PROJECT_DIR$/MediaProvider.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/httpzoid/httpzoid.iml" filepath="$PROJECT_DIR$/httpzoid/httpzoid.iml" />
     </modules>
   </component>
 </project>

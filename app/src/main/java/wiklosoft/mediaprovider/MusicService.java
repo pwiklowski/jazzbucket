@@ -3,21 +3,23 @@ package wiklosoft.mediaprovider;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.drm.DrmStore;
 import android.media.MediaDescription;
 import android.media.MediaMetadata;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
-import android.media.Rating;
 import android.media.browse.MediaBrowser;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.service.media.MediaBrowserService;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import wiklosoft.mediaprovider.providers.MusicProvider;
 import wiklosoft.mediaprovider.providers.TestMusicProvider;
@@ -26,6 +28,9 @@ import wiklosoft.mediaprovider.providers.TestMusicProvider;
  * Created by Pawel Wiklowski on 07.10.15.
  */
 public class MusicService extends MediaBrowserService{
+
+    private static MusicService mMusicService; //I don't like it, it should be safe TODO: find better way to do it
+
     private String TAG = "MusicService";
     private List<MusicProvider> mMusicProviderList = new ArrayList<>();
     private String ROOT_ID = "/";
@@ -38,11 +43,10 @@ public class MusicService extends MediaBrowserService{
 
     @Override
     public void onCreate(){
+        Log.d(TAG, "onCreate");
         super.onCreate();
 
         mMusicProviderList.add(new TestMusicProvider("test1"));
-        mMusicProviderList.add(new TestMusicProvider("test2"));
-        mMusicProviderList.add(new TestMusicProvider("test3"));
 
 
         mPlayingQueue = new ArrayList<>();
@@ -60,12 +64,20 @@ public class MusicService extends MediaBrowserService{
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
         mSession.setSessionActivity(pi);
 
-        Bundle extras = new Bundle();
-        mSession.setExtras(extras);
-
-
         mMediaPlayer = new MediaPlayer();
+        mMusicService = this;
     }
+
+
+
+    static MusicService getService() {
+            return mMusicService;
+    }
+
+    public List<MusicProvider> getMusicProviders(){
+        return mMusicProviderList;
+    }
+
     private final class MediaSessionCallback extends MediaSession.Callback {
         @Override
         public void onPlay() {
@@ -85,27 +97,33 @@ public class MusicService extends MediaBrowserService{
         }
 
         @Override
-        public void onPlayFromMediaId(String mediaId, Bundle extras) {
+        public void onPlayFromMediaId(final String mediaId, Bundle extras) {
             Log.d(TAG, "playFromMediaId mediaId:"+ mediaId+ "  extras="+ extras);
 
 
-            String url = getMediaUrl(mediaId);
+            getMediaUrl(mediaId, new MusicReady() {
+                @Override
+                public void ready(String url, Map<String, String> headers) {
+                    try {
+                        mSession.setMetadata(getMetaData(url, headers));
+
+                        mMediaPlayer.reset();
+
+                        mMediaPlayer.setDataSource(mMusicService, Uri.parse(url), headers);
+                        mMediaPlayer.prepare();
+                        mMediaPlayer.start();
+
+                        updatePlaybackState(PlaybackState.STATE_PLAYING);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
 
 
-            //String url = "http://192.168.1.8/ostr/01%20-%20O.S.T.R.%20-%20%20Prolog.mp3";
 
-            try {
-                mMediaPlayer.reset();
-                mMediaPlayer.setDataSource(url);
-                mMediaPlayer.prepare();
-                mMediaPlayer.start();
 
-                updatePlaybackState(PlaybackState.STATE_PLAYING);
-                updateMetadata(mediaId);
-
-            }catch (Exception e){
-                e.printStackTrace();
-            }
 
         }
 
@@ -142,21 +160,26 @@ public class MusicService extends MediaBrowserService{
 
         }
     }
-    private String getMediaUrl(String mediaId){
+    private void getMediaUrl(String mediaId, MusicReady ready){
         String providerId = mediaId.split("/")[0];
 
         MusicProvider provider = getMusicProvider(providerId);
 
-        return provider.getMediaUrl(mediaId);
+        provider.getMediaUrl(mediaId, ready);
     }
 
-    private void updateMetadata(String id) {
-        String providerId = id.split("/")[0];
 
-        MusicProvider provider = getMusicProvider(providerId);
+    public MediaMetadata getMetaData(String url, Map<String, String> headers) {
+        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+        mmr.setDataSource(url, headers);
 
+        MediaMetadata.Builder b = new MediaMetadata.Builder();
+        b.putString(MediaMetadata.METADATA_KEY_ARTIST, mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST));
+        b.putString(MediaMetadata.METADATA_KEY_TITLE, mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE));
+        b.putLong(MediaMetadata.METADATA_KEY_DURATION, Long.parseLong(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)));
 
-        mSession.setMetadata(provider.getMetaData(id));
+        mmr.release();
+        return b.build();
     }
 
     private void updatePlaybackState(int state) {
@@ -207,11 +230,14 @@ public class MusicService extends MediaBrowserService{
                         .setMediaId(provider.getId())
                         .setTitle(provider.getName())
                         .build(), MediaBrowser.MediaItem.FLAG_BROWSABLE));
+
+
             }
+            result.sendResult(mediaItems);
         }else{
-            MusicProvider p = getMusicProvider(s);
-            mediaItems = p.getChildren(s);
+            MusicProvider p = getMusicProvider(s.split("/")[0]);
+            p.getChildren(s, result);
+            result.detach();
         }
-        result.sendResult(mediaItems);
     }
 }

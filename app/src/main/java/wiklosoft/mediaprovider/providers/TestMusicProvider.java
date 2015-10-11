@@ -1,12 +1,18 @@
 package wiklosoft.mediaprovider.providers;
 
+import android.app.Activity;
 import android.media.MediaDescription;
 import android.media.MediaMetadata;
 import android.media.MediaMetadataRetriever;
 import android.media.Rating;
 import android.media.browse.MediaBrowser;
 import android.media.browse.MediaBrowser.MediaItem;
+import android.os.Bundle;
 import android.service.media.MediaBrowserService;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 
 import java.util.ArrayList;
@@ -14,7 +20,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import wiklosoft.mediaprovider.MainActivity;
+import wiklosoft.mediaprovider.MusicReady;
 import wiklosoft.mediaprovider.MusicService;
+import wiklosoft.mediaprovider.R;
 
 /**
  * Created by Pawel Wiklowski on 07.10.15.
@@ -51,6 +60,16 @@ public class TestMusicProvider implements MusicProvider {
 
 
     @Override
+    public String getToken() {
+        return null;
+    }
+
+    @Override
+    public void setToken(String token) {
+
+    }
+
+    @Override
     public String getName() {
         return "Test Music Provider";
     }
@@ -61,7 +80,7 @@ public class TestMusicProvider implements MusicProvider {
     }
 
     @Override
-    public List<MediaBrowser.MediaItem> getChildren(String s){
+    public void getChildren(String s, MediaBrowserService.Result<List<MediaItem>> result){
         List<MediaBrowser.MediaItem> list = new ArrayList<>();
 
         for(String f: files.keySet()){
@@ -71,18 +90,18 @@ public class TestMusicProvider implements MusicProvider {
                     .build(), MediaBrowser.MediaItem.FLAG_PLAYABLE));
         }
 
-        return list;
+        result.sendResult(list);
     }
 
     @Override
-    public String getMediaUrl(String id) {
-        return files.get(id.replace(mId +"/", "")).toString();
+    public void getMediaUrl(String id, MusicReady callback) {
+        callback.ready(files.get(id.replace(mId +"/", "")).toString(), null);
     }
 
     @Override
-    public MediaMetadata getMetaData(String id) {
+    public MediaMetadata getMetaData(String url) {
         MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        mmr.setDataSource(getMediaUrl(id), new HashMap<String, String>());
+        mmr.setDataSource(url, new HashMap<String, String>());
 
         MediaMetadata.Builder b = new MediaMetadata.Builder();
         b.putString(MediaMetadata.METADATA_KEY_ARTIST, mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST));
@@ -91,5 +110,23 @@ public class TestMusicProvider implements MusicProvider {
 
         mmr.release();
         return b.build();
+    }
+
+    @Override
+    public Fragment getSettingsFragment() {
+        SettingsFragment fragment = new SettingsFragment();
+        return fragment;
+    }
+
+    public static class SettingsFragment extends Fragment {
+
+        public SettingsFragment() {
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            View rootView = inflater.inflate(R.layout.test_settings, container, false);
+            return rootView;
+        }
     }
 }
