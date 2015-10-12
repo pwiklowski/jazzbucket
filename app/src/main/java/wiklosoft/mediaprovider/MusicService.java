@@ -108,9 +108,13 @@ public class MusicService extends MediaBrowserService{
                         String providerId = mediaId.split("/")[0];
                         MusicProvider provider = getMusicProvider(providerId);
 
-                        if (!provider.getMetaData(mediaId, mMetadataReady)) {
-                            //try generic way
-                            mSession.setMetadata(getMetaData(url, headers));
+                        try {
+                            if (!provider.getMetaData(mediaId, mMetadataReady)) {
+                                //try generic way
+                                mSession.setMetadata(getMetaData(url, headers));
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
 
 
