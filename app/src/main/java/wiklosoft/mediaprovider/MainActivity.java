@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import java.util.ArrayList;
 import java.util.List;
 
+import wiklosoft.mediaprovider.providers.DibbleProvider;
 import wiklosoft.mediaprovider.providers.DropboxProvider;
 import wiklosoft.mediaprovider.providers.GoogleDriveProvider;
 import wiklosoft.mediaprovider.providers.MusicProvider;
@@ -72,6 +73,7 @@ public class MainActivity extends FragmentActivity
             mMusicProviderList.add(new DropboxProvider(mMusicService));
             mMusicProviderList.add(new GoogleDriveProvider(mMusicService));
             mMusicProviderList.add(new SoundCloudProvider(mMusicService));
+            mMusicProviderList.add(new DibbleProvider(mMusicService));
 
 
             String[] names = new String[mMusicProviderList.size()];
