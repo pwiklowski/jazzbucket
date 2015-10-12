@@ -23,6 +23,7 @@ import wiklosoft.mediaprovider.providers.DropboxProvider;
 import wiklosoft.mediaprovider.providers.GoogleDriveProvider;
 import wiklosoft.mediaprovider.providers.MusicProvider;
 import wiklosoft.mediaprovider.providers.SoundCloudProvider;
+import wiklosoft.mediaprovider.providers.YoutubeProvider;
 
 
 public class MainActivity extends FragmentActivity
@@ -74,6 +75,7 @@ public class MainActivity extends FragmentActivity
             mMusicProviderList.add(new GoogleDriveProvider(mMusicService));
             mMusicProviderList.add(new SoundCloudProvider(mMusicService));
             mMusicProviderList.add(new DibbleProvider(mMusicService));
+            mMusicProviderList.add(new YoutubeProvider(mMusicService));
 
 
             String[] names = new String[mMusicProviderList.size()];
