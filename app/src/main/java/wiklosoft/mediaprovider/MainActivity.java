@@ -3,17 +3,26 @@ package wiklosoft.mediaprovider;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.ActionBar;
+import android.graphics.Typeface;
+import android.support.v4.app.FragmentTransaction;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.media.MediaMetadata;
+import android.media.browse.MediaBrowser;
+import android.media.session.MediaController;
+import android.media.session.MediaSession;
+import android.media.session.PlaybackState;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +30,7 @@ import java.util.List;
 import wiklosoft.mediaprovider.providers.DibbleProvider;
 import wiklosoft.mediaprovider.providers.DropboxProvider;
 import wiklosoft.mediaprovider.providers.GoogleDriveProvider;
+import wiklosoft.mediaprovider.providers.LocalFilesProvider;
 import wiklosoft.mediaprovider.providers.MusicProvider;
 import wiklosoft.mediaprovider.providers.SoundCloudProvider;
 import wiklosoft.mediaprovider.providers.YoutubeProvider;
@@ -29,6 +39,8 @@ import wiklosoft.mediaprovider.providers.YoutubeProvider;
 public class MainActivity extends FragmentActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
+    private MediaBrowser mMediaBrowser;
+    private MusicProvider mProvider = null;
     private String TAG = "MainActivity";
     private MusicService mMusicService = null;
     private List<MusicProvider> mMusicProviderList = new ArrayList<>();
@@ -46,6 +58,7 @@ public class MainActivity extends FragmentActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setActionBarFont();
         setContentView(R.layout.activity_main);
 
         mNavigationDrawerFragment = (NavigationDrawerFragment) getFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -60,7 +73,64 @@ public class MainActivity extends FragmentActivity
         bindService(i, mServiceConnection, Context.BIND_AUTO_CREATE);
         startService(i);
 
+        mMediaBrowser = new MediaBrowser(this, new ComponentName(this, MusicService.class), mConnectionCallback, null);
+        mMediaBrowser.connect();
+
+
+
+        PlayerFragment pf = new PlayerFragment();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.player, pf).commit();
+
     }
+    void setActionBarFont(){
+        int titleId = getResources().getIdentifier("action_bar_title", "id", "android");
+        TextView yourTextView = (TextView) findViewById(titleId);
+        Typeface font2 =  Typeface.create("sans-serif-light", Typeface.NORMAL);
+        yourTextView.setTypeface(font2);
+        yourTextView.setTextSize(20);
+    }
+
+    private final MediaBrowser.ConnectionCallback mConnectionCallback = new MediaBrowser.ConnectionCallback() {
+        @Override
+        public void onConnected() {
+            connectToSession(mMediaBrowser.getSessionToken());
+        }
+    };
+    private void connectToSession(MediaSession.Token token) {
+        MediaController mediaController = new MediaController(this, token);
+        setMediaController(mediaController);
+        mediaController.registerCallback(mMediaControllerCallback);
+
+
+        MediaView mv = new MediaView();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        //transaction.setCustomAnimations(
+        //        R.animator.slide_in_from_right, R.animator.slide_out_to_left,
+        //        R.animator.slide_in_from_left, R.animator.slide_out_to_right);
+
+
+        transaction.replace(R.id.container, mv).commit();
+
+
+    }
+    public MediaBrowser getMediaBrowser(){
+        return mMediaBrowser;
+    }
+
+    private final MediaController.Callback mMediaControllerCallback =
+    new MediaController.Callback() {
+        @Override
+        public void onPlaybackStateChanged(@NonNull PlaybackState state) {
+            Log.d(TAG, "mediaControllerCallback.onPlaybackStateChanged: " + state.getState());
+        }
+
+        @Override
+        public void onMetadataChanged(MediaMetadata metadata) {
+            Log.d(TAG, "mediaControllerCallback.onMetadataChanged");
+        }
+    };
+
     protected ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder binder) {
@@ -84,6 +154,8 @@ public class MainActivity extends FragmentActivity
                 names[i] =mMusicProviderList.get(i).getName();
 
             mNavigationDrawerFragment.setItems(names);
+
+
         }
 
         @Override
@@ -101,10 +173,6 @@ public class MainActivity extends FragmentActivity
         getSupportFragmentManager().beginTransaction().replace(R.id.container, mp.getSettingsFragment()).commit();
     }
 
-    public void onSectionAttached(int number) {
-        if (mMusicProviderList.size() >0)
-            mTitle = mMusicProviderList.get(number).getName();
-    }
 
     public void restoreActionBar() {
         ActionBar actionBar = getActionBar();
