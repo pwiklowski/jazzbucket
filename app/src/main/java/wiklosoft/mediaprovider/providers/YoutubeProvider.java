@@ -24,6 +24,7 @@ import java.util.Map;
 
 import wiklosoft.mediaprovider.MetadataReady;
 import wiklosoft.mediaprovider.MusicReady;
+import wiklosoft.mediaprovider.R;
 
 
 /**
@@ -209,6 +210,7 @@ public class YoutubeProvider extends OAuthProvider {
 
         @Override
         public void init(){
+            mLogo = R.mipmap.youtube;
             super.init();
         }
     }

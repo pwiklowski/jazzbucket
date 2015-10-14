@@ -25,6 +25,7 @@ import java.util.Map;
 
 import wiklosoft.mediaprovider.MetadataReady;
 import wiklosoft.mediaprovider.MusicReady;
+import wiklosoft.mediaprovider.R;
 
 
 /**
@@ -298,6 +299,7 @@ public class SoundCloudProvider extends OAuthProvider {
 
         @Override
         public void init(){
+            mLogo = R.mipmap.soundcloud;
             super.init();
         }
     }

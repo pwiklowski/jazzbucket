@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 
 import com.google.api.client.auth.oauth2.BearerToken;
 import com.google.api.client.auth.oauth2.ClientParametersAuthentication;
@@ -37,7 +38,7 @@ public class BaseSettingsFragment extends Fragment {
     private Button mAuth = null;
     private OAuthManager oauth = null;
     private Credential credential = null;
-
+    protected int mLogo = R.mipmap.no_logo;
 
     public BaseSettingsFragment() {
         init();
@@ -65,6 +66,9 @@ public class BaseSettingsFragment extends Fragment {
                 authorize();
             }
         });
+
+        ImageView logo = (ImageView) rootView.findViewById(R.id.imageView);
+        logo.setImageResource(mLogo);
 
         return rootView;
     }

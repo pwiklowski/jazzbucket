@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import wiklosoft.mediaprovider.MusicReady;
+import wiklosoft.mediaprovider.R;
 
 
 /**
@@ -137,6 +138,7 @@ public class DropboxProvider extends OAuthProvider {
 
         @Override
         public void init(){
+            mLogo = R.mipmap.dropbox;
 
             super.init();
         }

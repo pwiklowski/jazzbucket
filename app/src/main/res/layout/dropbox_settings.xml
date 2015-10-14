@@ -17,7 +17,6 @@
         android:layout_height="300dp"
         android:id="@+id/imageView"
         android:layout_gravity="center_horizontal"
-        android:background="@mipmap/dropbox"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"/>
 
