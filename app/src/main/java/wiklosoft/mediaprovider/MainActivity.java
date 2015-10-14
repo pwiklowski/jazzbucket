@@ -70,6 +70,7 @@ public class MainActivity extends FragmentActivity
             mMusicProviderList = mMusicService.getMusicProviders();
 
 
+            mMusicProviderList.add(new LocalFilesProvider(mMusicService));
 
             mMusicProviderList.add(new DropboxProvider(mMusicService));
             mMusicProviderList.add(new GoogleDriveProvider(mMusicService));
