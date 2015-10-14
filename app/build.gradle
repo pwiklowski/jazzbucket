@@ -5,7 +5,7 @@ android {
     buildToolsVersion "23.0.1"
 
     defaultConfig {
-        applicationId "wiklosoft.mediaprovider"
+        applicationId "wiklosoft.jazzbucket"
         minSdkVersion 21
         targetSdkVersion 22
         versionCode 1
