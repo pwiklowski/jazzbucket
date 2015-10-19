@@ -105,14 +105,8 @@ public class MainActivity extends FragmentActivity
 
         MediaView mv = new MediaView();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        //transaction.setCustomAnimations(
-        //        R.animator.slide_in_from_right, R.animator.slide_out_to_left,
-        //        R.animator.slide_in_from_left, R.animator.slide_out_to_right);
-
-
+        transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left, android.R.anim.slide_in_left, android.R.anim.slide_out_right);
         transaction.replace(R.id.container, mv).commit();
-
-
     }
     public MediaBrowser getMediaBrowser(){
         return mMediaBrowser;
