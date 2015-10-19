@@ -4,6 +4,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.ActionBar;
 import android.graphics.Typeface;
+import android.media.MediaDescription;
 import android.support.v4.app.FragmentTransaction;
 import android.content.ComponentName;
 import android.content.Context;
@@ -25,8 +26,11 @@ import android.view.MenuItem;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
+import wiklosoft.mediaprovider.playlists.Playlist;
+import wiklosoft.mediaprovider.playlists.PlaylistDatabaseHandler;
 import wiklosoft.mediaprovider.providers.DibbleProvider;
 import wiklosoft.mediaprovider.providers.DropboxProvider;
 import wiklosoft.mediaprovider.providers.GoogleDriveProvider;
@@ -36,9 +40,8 @@ import wiklosoft.mediaprovider.providers.SoundCloudProvider;
 import wiklosoft.mediaprovider.providers.YoutubeProvider;
 
 
-public class MainActivity extends FragmentActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
-
+public class MainActivity extends FragmentActivity implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+    private PlayerFragment mPlayerFragment = null;
     private MediaBrowser mMediaBrowser;
     private MusicProvider mProvider = null;
     private String TAG = "MainActivity";
@@ -78,9 +81,9 @@ public class MainActivity extends FragmentActivity
 
 
 
-        PlayerFragment pf = new PlayerFragment();
+        mPlayerFragment = new PlayerFragment();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.player, pf).commit();
+        transaction.replace(R.id.player, mPlayerFragment).commit();
 
     }
     void setActionBarFont(){
@@ -116,14 +119,19 @@ public class MainActivity extends FragmentActivity
     new MediaController.Callback() {
         @Override
         public void onPlaybackStateChanged(@NonNull PlaybackState state) {
-            Log.d(TAG, "mediaControllerCallback.onPlaybackStateChanged: " + state.getState());
+            if (mPlayerFragment != null){
+                mPlayerFragment.onPlaybackStateChanged(state);
+            }
         }
 
         @Override
         public void onMetadataChanged(MediaMetadata metadata) {
-            Log.d(TAG, "mediaControllerCallback.onMetadataChanged");
+            if (mPlayerFragment != null){
+                mPlayerFragment.onMetadataChanged(metadata);
+            }
         }
     };
+
 
     protected ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override

@@ -5,6 +5,7 @@ import android.media.MediaDescription;
 import android.media.MediaMetadata;
 import android.media.MediaMetadataRetriever;
 import android.media.browse.MediaBrowser.MediaItem;
+import android.media.session.MediaSession;
 import android.os.Bundle;
 import android.os.Environment;
 import android.service.media.MediaBrowserService;
@@ -21,6 +22,7 @@ import java.util.List;
 
 import wiklosoft.mediaprovider.MetadataReady;
 import wiklosoft.mediaprovider.MusicReady;
+import wiklosoft.mediaprovider.QueueReady;
 import wiklosoft.mediaprovider.R;
 
 /**
@@ -76,7 +78,7 @@ public class LocalFilesProvider implements MusicProvider {
             File item = files[i];
 
             list.add(new MediaItem(new MediaDescription.Builder()
-                    .setMediaId(mId + item.getPath())
+                    .setMediaId(mId + item.getAbsolutePath())
                     .setTitle(item.getName())
                     .build(), item.isDirectory() ? MediaItem.FLAG_BROWSABLE : MediaItem.FLAG_PLAYABLE));
         }
@@ -86,15 +88,13 @@ public class LocalFilesProvider implements MusicProvider {
 
     @Override
     public void getMediaUrl(String id, MusicReady callback) {
-        callback.ready(files.get(id.replace(mId +"/", "")).toString(), null);
+        callback.ready(id.replace(mId, ""), null);
     }
 
     @Override
     public boolean getMetaData(String url, MetadataReady callback) {
-
-
         MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        mmr.setDataSource(url, new HashMap<String, String>());
+        mmr.setDataSource(url.replace(mId, ""));
 
         MediaMetadata.Builder b = new MediaMetadata.Builder();
         b.putString(MediaMetadata.METADATA_KEY_ARTIST, mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST));
@@ -103,9 +103,30 @@ public class LocalFilesProvider implements MusicProvider {
 
         mmr.release();
         callback.ready(b.build());
-
-
         return true;
+    }
+
+    @Override
+    public  void getQueue(String mediaId, QueueReady callback) {
+        List<MediaSession.QueueItem> list = new ArrayList<>();
+
+
+        File f = new File(new File(mediaId.replace(mId, "")).getParent());
+
+        File[] files = f.listFiles();
+        Arrays.sort(files);
+        for(int i=0; i<files.length;i++){
+            File item = files[i];
+
+            if (!item.isDirectory()) {
+                list.add(new MediaSession.QueueItem(new MediaDescription.Builder()
+                        .setMediaId(mId + item.getAbsolutePath())
+                        .setTitle(item.getName())
+                        .build(), MediaItem.FLAG_PLAYABLE));
+            }
+        }
+
+        callback.ready(list);
     }
 
     @Override

@@ -28,6 +28,7 @@ import java.util.List;
 
 import wiklosoft.mediaprovider.MetadataReady;
 import wiklosoft.mediaprovider.MusicReady;
+import wiklosoft.mediaprovider.QueueReady;
 import wiklosoft.mediaprovider.R;
 
 /**
@@ -302,6 +303,12 @@ public class DibbleProvider implements MusicProvider {
                 }).send();
         return true;
     }
+
+    @Override
+    public void getQueue(String mediaId, QueueReady callback) {
+
+    }
+
 
     @Override
     public Fragment getSettingsFragment() {

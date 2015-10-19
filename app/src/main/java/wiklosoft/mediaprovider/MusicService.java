@@ -21,7 +21,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import wiklosoft.mediaprovider.playlists.PlaylistDatabaseHandler;
 import wiklosoft.mediaprovider.providers.MusicProvider;
+import wiklosoft.mediaprovider.providers.PlaylistsProvider;
 import wiklosoft.mediaprovider.providers.TestMusicProvider;
 
 /**
@@ -39,6 +41,7 @@ public class MusicService extends MediaBrowserService{
     private List<MediaSession.QueueItem> mPlayingQueue;
 
     private MediaPlayer mMediaPlayer;
+    private String ADD_TO_FAVORITES_ACTION = "add_to_favorites_action";
 
 
     @Override
@@ -47,6 +50,7 @@ public class MusicService extends MediaBrowserService{
         super.onCreate();
 
         mMusicProviderList.add(new TestMusicProvider("test1"));
+        mMusicProviderList.add(new PlaylistsProvider(this));
 
 
         mPlayingQueue = new ArrayList<>();
@@ -58,6 +62,7 @@ public class MusicService extends MediaBrowserService{
         mSession.setFlags(MediaSession.FLAG_HANDLES_MEDIA_BUTTONS |
                 MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS);
 
+        mSession.setQueue(mPlayingQueue);
         Context context = getApplicationContext();
         Intent intent = new Intent(context, MainActivity.class);
         PendingIntent pi = PendingIntent.getActivity(context, 99 /*request code*/,
@@ -79,11 +84,14 @@ public class MusicService extends MediaBrowserService{
     }
 
     private final class MediaSessionCallback extends MediaSession.Callback {
+        String mMediaId = "";
+        int mCurrentQueueId = 0;
+
         @Override
         public void onPlay() {
             Log.d(TAG, "play");
             mMediaPlayer.start();
-            updatePlaybackState(PlaybackState.STATE_PLAYING);
+            updatePlaybackState(mMediaId, PlaybackState.STATE_PLAYING);
         }
 
         @Override
@@ -95,18 +103,43 @@ public class MusicService extends MediaBrowserService{
         public void onSeekTo(long position) {
             Log.d(TAG, "onSeekTo:"+ position);
         }
+        private int getPositionOnQueue(String mediaId, List<MediaSession.QueueItem> items){
+
+            for(int i=0;i<items.size();i++)
+            {
+                if (items.get(i).getDescription().getMediaId().equals(mediaId)){
+                    return i;
+                }
+            }
+
+            return 0;
+        }
+
+        QueueReady mQueueReadyCallback = new QueueReady() {
+            @Override
+            public void ready(List<MediaSession.QueueItem> items) {
+
+                mPlayingQueue = items;
+                mCurrentQueueId = getPositionOnQueue(mMediaId, items);
+                mSession.setQueue(items);
+                updatePlaybackState(mMediaId, mMediaPlayer.isPlaying() ? PlaybackState.STATE_PLAYING : PlaybackState.STATE_PAUSED);
+            }
+        };
 
         @Override
         public void onPlayFromMediaId(final String mediaId, Bundle extras) {
             Log.d(TAG, "playFromMediaId mediaId:"+ mediaId+ "  extras="+ extras);
-
-
+            mMediaId = mediaId;
+            updatePlaybackState(mediaId, PlaybackState.STATE_BUFFERING);
             getMediaUrl(mediaId, new MusicReady() {
                 @Override
                 public void ready(String url, Map<String, String> headers) {
                     try {
                         String providerId = mediaId.split("/")[0];
                         MusicProvider provider = getMusicProvider(providerId);
+
+
+                        provider.getQueue(mediaId, mQueueReadyCallback);
 
                         try {
                             if (!provider.getMetaData(mediaId, mMetadataReady)) {
@@ -121,10 +154,11 @@ public class MusicService extends MediaBrowserService{
                         mMediaPlayer.reset();
 
                         mMediaPlayer.setDataSource(mMusicService, Uri.parse(url), headers);
+                        updatePlaybackState(mMediaId, PlaybackState.STATE_BUFFERING);
                         mMediaPlayer.prepare();
                         mMediaPlayer.start();
 
-                        updatePlaybackState(PlaybackState.STATE_PLAYING);
+                        updatePlaybackState(mMediaId, PlaybackState.STATE_PLAYING);
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -149,7 +183,7 @@ public class MusicService extends MediaBrowserService{
         public void onPause() {
             Log.d(TAG, "pause. ");
             mMediaPlayer.pause();
-            updatePlaybackState(PlaybackState.STATE_PAUSED);
+            updatePlaybackState(mMediaId, PlaybackState.STATE_PAUSED);
         }
 
         @Override
@@ -160,16 +194,45 @@ public class MusicService extends MediaBrowserService{
         @Override
         public void onSkipToNext() {
             Log.d(TAG, "skipToNext");
+            if (mPlayingQueue !=null && !mPlayingQueue.isEmpty()){
+
+                if (mCurrentQueueId + 1 == mPlayingQueue.size())
+                    mCurrentQueueId = 0;
+                else
+                    mCurrentQueueId++;
+
+                onPlayFromMediaId(mPlayingQueue.get(mCurrentQueueId).getDescription().getMediaId(), null);
+            }
 
         }
 
         @Override
         public void onSkipToPrevious() {
             Log.d(TAG, "skipToPrevious");
+            if (mPlayingQueue !=null && !mPlayingQueue.isEmpty()){
+
+                if (mCurrentQueueId  != 0)
+                    mCurrentQueueId--;
+
+                onPlayFromMediaId(mPlayingQueue.get(mCurrentQueueId).getDescription().getMediaId(), null);
+            }
         }
 
         @Override
         public void onCustomAction(String action, Bundle extras) {
+            if (action.equals(ADD_TO_FAVORITES_ACTION)){
+                PlaylistDatabaseHandler db = new PlaylistDatabaseHandler(MusicService.getService());
+                String[] parts = mMediaId.split("/");
+                if (PlaylistDatabaseHandler.isOnFavorites(MusicService.getService(), mMediaId)) {
+                    db.removeItemFromPlaylist("Favorites", mMediaId);
+                }else {
+                    db.addItemToPlaylist("Favorites", parts[parts.length-1], mMediaId);
+                }
+
+                updatePlaybackState(mMediaId, mMediaPlayer.isPlaying() ? PlaybackState.STATE_PLAYING : PlaybackState.STATE_PAUSED);
+            }
+
+
         }
 
         @Override
@@ -182,8 +245,8 @@ public class MusicService extends MediaBrowserService{
         String providerId = mediaId.split("/")[0];
 
         MusicProvider provider = getMusicProvider(providerId);
-
-        provider.getMediaUrl(mediaId, ready);
+        if (provider != null)
+            provider.getMediaUrl(mediaId, ready);
     }
 
 
@@ -205,29 +268,33 @@ public class MusicService extends MediaBrowserService{
         return b.build();
     }
 
-    private void updatePlaybackState(int state) {
+    private void updatePlaybackState(String item, int state) {
 
-        PlaybackState.Builder stateBuilder = new PlaybackState.Builder()
-                .setActions(getAvailableActions());
-
-        stateBuilder.setState(state,mMediaPlayer.getCurrentPosition(), 1.0f, SystemClock.elapsedRealtime());
-
+        PlaybackState.Builder stateBuilder = new PlaybackState.Builder().setActions(getAvailableActions());
+        stateBuilder.setState(state, mMediaPlayer.getCurrentPosition(), 1.0f, SystemClock.elapsedRealtime());
+        if (PlaylistDatabaseHandler.isOnFavorites(this, item))
+            stateBuilder.addCustomAction(ADD_TO_FAVORITES_ACTION, "fav", R.mipmap.star_on);
+        else
+            stateBuilder.addCustomAction(ADD_TO_FAVORITES_ACTION, "fav", R.mipmap.star_off);
 
         mSession.setPlaybackState(stateBuilder.build());
-
     }
+
+
     private long getAvailableActions() {
         long actions = PlaybackState.ACTION_PLAY | PlaybackState.ACTION_PLAY_FROM_MEDIA_ID |
                 PlaybackState.ACTION_PLAY_FROM_SEARCH;
 
-        if (mPlayingQueue == null || mPlayingQueue.isEmpty()) {
+
+        if (mPlayingQueue == null ||  mPlayingQueue.isEmpty()){
             return actions;
         }
         if (mMediaPlayer.isPlaying()) {
             actions |= PlaybackState.ACTION_PAUSE;
         }
-            actions |= PlaybackState.ACTION_SKIP_TO_PREVIOUS;
-            actions |= PlaybackState.ACTION_SKIP_TO_NEXT;
+
+        actions |= PlaybackState.ACTION_SKIP_TO_PREVIOUS;
+        actions |= PlaybackState.ACTION_SKIP_TO_NEXT;
         return actions;
     }
     @Override

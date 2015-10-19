@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.media.MediaDescription;
 import android.media.MediaMetadata;
 import android.media.browse.MediaBrowser;
+import android.media.session.MediaSession;
 import android.preference.PreferenceManager;
 import android.service.media.MediaBrowserService;
 import android.support.v4.app.Fragment;
@@ -24,6 +25,7 @@ import java.util.List;
 
 import wiklosoft.mediaprovider.MetadataReady;
 import wiklosoft.mediaprovider.MusicReady;
+import wiklosoft.mediaprovider.QueueReady;
 
 
 /**
@@ -32,6 +34,7 @@ import wiklosoft.mediaprovider.MusicReady;
 public class OAuthProvider implements MusicProvider {
     protected String ID = null;
     protected Context mContext;
+    protected String mRefreshToken = "";
 
     protected String AUTH_URL = null;
     protected String TOKEN_URL = null;
@@ -51,6 +54,9 @@ public class OAuthProvider implements MusicProvider {
         return CLIENT_SECRET;
     }
 
+    void setRefrehToken(String token){
+        mRefreshToken = token;
+    }
 
     public OAuthProvider(String id, Context context){
         ID = id;
@@ -95,6 +101,12 @@ public class OAuthProvider implements MusicProvider {
     public boolean getMetaData(String id, MetadataReady callback) {
         return false;
     }
+
+    @Override
+    public void getQueue(String mediaId, QueueReady callback) {
+
+    }
+
 
     @Override
     public Fragment getSettingsFragment() {

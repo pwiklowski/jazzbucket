@@ -7,6 +7,7 @@ import android.media.MediaMetadataRetriever;
 import android.media.Rating;
 import android.media.browse.MediaBrowser;
 import android.media.browse.MediaBrowser.MediaItem;
+import android.media.session.MediaSession;
 import android.os.Bundle;
 import android.service.media.MediaBrowserService;
 import android.support.v4.app.Fragment;
@@ -24,7 +25,10 @@ import wiklosoft.mediaprovider.MainActivity;
 import wiklosoft.mediaprovider.MetadataReady;
 import wiklosoft.mediaprovider.MusicReady;
 import wiklosoft.mediaprovider.MusicService;
+import wiklosoft.mediaprovider.QueueReady;
 import wiklosoft.mediaprovider.R;
+import wiklosoft.mediaprovider.playlists.Playlist;
+import wiklosoft.mediaprovider.playlists.PlaylistDatabaseHandler;
 
 /**
  * Created by Pawel Wiklowski on 07.10.15.
@@ -94,17 +98,19 @@ public class TestMusicProvider implements MusicProvider {
         result.sendResult(list);
     }
 
+
+
+
+
     @Override
     public void getMediaUrl(String id, MusicReady callback) {
-        callback.ready(files.get(id.replace(mId +"/", "")).toString(), null);
+        callback.ready(id.replace(mId +"/", ""), null);
     }
 
     @Override
-    public boolean getMetaData(String url, MetadataReady callback) {
-
-
+    public boolean getMetaData(String mediaId, MetadataReady callback) {
         MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        mmr.setDataSource(url, new HashMap<String, String>());
+        mmr.setDataSource(mediaId.replace(mId +"/", ""), new HashMap<String, String>());
 
         MediaMetadata.Builder b = new MediaMetadata.Builder();
         b.putString(MediaMetadata.METADATA_KEY_ARTIST, mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST));
@@ -113,10 +119,15 @@ public class TestMusicProvider implements MusicProvider {
 
         mmr.release();
         callback.ready(b.build());
-
-
         return true;
     }
+
+    @Override
+    public void getQueue(String mediaId, QueueReady callback) {
+
+    }
+
+
 
     @Override
     public Fragment getSettingsFragment() {

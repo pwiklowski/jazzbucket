@@ -3,6 +3,7 @@ package wiklosoft.mediaprovider.providers;
 import android.content.Context;
 import android.media.MediaDescription;
 import android.media.browse.MediaBrowser;
+import android.media.session.MediaSession;
 import android.service.media.MediaBrowserService;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -17,9 +18,13 @@ import com.kodart.httpzoid.NetworkError;
 import com.kodart.httpzoid.ResponseHandler;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import wiklosoft.mediaprovider.MusicReady;
+import wiklosoft.mediaprovider.QueueReady;
 import wiklosoft.mediaprovider.R;
 
 
@@ -76,6 +81,8 @@ public class DropboxProvider extends OAuthProvider {
                             list.add(item);
                         }
                     }
+
+                    Collections.sort(list, new MediaItemComparator());
                     childrens.sendResult(list);
                 }
 
@@ -97,6 +104,19 @@ public class DropboxProvider extends OAuthProvider {
 
     }
 
+    public class MediaItemComparator implements Comparator<MediaBrowser.MediaItem> {
+        @Override
+        public int compare(MediaBrowser.MediaItem o1, MediaBrowser.MediaItem o2) {
+            return o1.getDescription().getTitle().toString().compareTo(o2.getDescription().getTitle().toString());
+        }
+    }
+
+    public class QueueItemComparator implements Comparator<MediaSession.QueueItem> {
+        @Override
+        public int compare(MediaSession.QueueItem o1, MediaSession.QueueItem o2) {
+            return o1.getDescription().getTitle().toString().compareTo(o2.getDescription().getTitle().toString());
+        }
+    }
     @Override
     public void getMediaUrl(String id, final MusicReady callback) {
         final String path = id.replace(ID, "");
@@ -125,6 +145,56 @@ public class DropboxProvider extends OAuthProvider {
                     public void complete() { Log.d(TAG, "complete"); }
                 }).send();
 
+    }
+
+    @Override
+    public void getQueue(String mediaId, final QueueReady callback) {
+        String[] parts = mediaId.split("/");
+
+        String path = mediaId.replace(getId(), "").replace(parts[parts.length-1],"");
+
+        path = path.substring(0, path.length()-1);
+
+
+        Http http = HttpFactory.create(mContext);
+        http.post("https://api.dropboxapi.com/2/files/list_folder")
+            .header("Authorization", "Bearer " + getToken())
+            .contentType("application/json")
+            .data("{\"path\": \"" + path + "\",\"recursive\": false}")
+            .handler(new ResponseHandler<JsonObject>() {
+                @Override
+                public void success(JsonObject result, HttpResponse response) {
+                    Log.d(TAG, "success");
+                    List<MediaSession.QueueItem> list = new ArrayList<>();
+                    JsonArray files = result.getAsJsonArray("entries");
+                    for (JsonElement file : files) {
+                        JsonObject fileObject = file.getAsJsonObject();
+                        String filename = fileObject.get("name").getAsString();
+                        Log.d(TAG, filename);
+
+                        boolean isFile = fileObject.get(".tag").getAsString().equals("file");
+                        if (!isFile || filename.endsWith(".mp3")) {
+
+                            MediaSession.QueueItem item = new MediaSession.QueueItem(new MediaDescription.Builder()
+                                    .setMediaId(ID + fileObject.get("path_lower").getAsString())
+                                    .setTitle(file.getAsJsonObject().get("name").getAsString())
+                                    .build(), isFile ? MediaBrowser.MediaItem.FLAG_PLAYABLE : MediaBrowser.MediaItem.FLAG_BROWSABLE);
+                            list.add(item);
+                        }
+                    }
+
+                    Collections.sort(list, new QueueItemComparator());
+                    callback.ready(list);
+                }
+                @Override
+                public void error(String message, HttpResponse response) { Log.e(TAG, "error" + message); }
+
+                @Override
+                public void failure(NetworkError error) { Log.e(TAG, "failure" + error); }
+
+                @Override
+                public void complete() { Log.d(TAG, "complete"); }
+            }).send();
     }
 
     @Override
