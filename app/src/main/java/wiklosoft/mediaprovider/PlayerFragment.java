@@ -45,10 +45,14 @@ public class PlayerFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 MediaController controller = getActivity().getMediaController();
-                if (controller.getPlaybackState().getState() == PlaybackState.STATE_PAUSED)
-                    getActivity().getMediaController().getTransportControls().play();
-                else if (controller.getPlaybackState().getState() == PlaybackState.STATE_PLAYING)
-                    getActivity().getMediaController().getTransportControls().pause();
+
+                PlaybackState state = controller.getPlaybackState();
+                if (state != null) {
+                    if (state.getState() == PlaybackState.STATE_PAUSED)
+                        getActivity().getMediaController().getTransportControls().play();
+                    else if (state.getState() == PlaybackState.STATE_PLAYING)
+                        getActivity().getMediaController().getTransportControls().pause();
+                }
             }
         });
 
