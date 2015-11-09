@@ -142,18 +142,13 @@ public class MainActivity extends FragmentActivity implements NavigationDrawerFr
             mMusicProviderList = mMusicService.getMusicProviders();
 
 
-            mMusicProviderList.add(new LocalFilesProvider(mMusicService));
-
-            mMusicProviderList.add(new DropboxProvider(mMusicService));
-            mMusicProviderList.add(new GoogleDriveProvider(mMusicService));
-            mMusicProviderList.add(new SoundCloudProvider(mMusicService));
-            mMusicProviderList.add(new DibbleProvider(mMusicService));
-            mMusicProviderList.add(new YoutubeProvider(mMusicService));
 
 
-            String[] names = new String[mMusicProviderList.size()];
+            String[] names = new String[mMusicProviderList.size()+1];
             for(int i=0; i<mMusicProviderList.size();i++)
                 names[i] =mMusicProviderList.get(i).getName();
+
+            names[mMusicProviderList.size()] = "Settings";
 
             mNavigationDrawerFragment.setItems(names);
 
@@ -170,9 +165,21 @@ public class MainActivity extends FragmentActivity implements NavigationDrawerFr
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         Log.d(TAG,"onNavigationDrawerItemSelected "+ position);
-        MusicProvider mp = mMusicProviderList.get(position);
-        mTitle = mp.getName();
-        getSupportFragmentManager().beginTransaction().replace(R.id.container, mp.getSettingsFragment()).commit();
+
+        if (position < mMusicProviderList.size()) {
+            MusicProvider mp = mMusicProviderList.get(position);
+            mTitle = mp.getName();
+
+            MediaView mv = new MediaView();
+            mv.setMediaId(mp.getId());
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left, android.R.anim.slide_in_left, android.R.anim.slide_out_right);
+            transaction.replace(R.id.container, mv).addToBackStack("").commit();
+
+        }else {
+            mTitle = "Settings";
+            getSupportFragmentManager().beginTransaction().replace(R.id.container, new SettingsFragment()).addToBackStack("").commit();
+        }
     }
 
 

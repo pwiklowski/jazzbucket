@@ -22,9 +22,15 @@ import java.util.List;
 import java.util.Map;
 
 import wiklosoft.mediaprovider.playlists.PlaylistDatabaseHandler;
+import wiklosoft.mediaprovider.providers.DibbleProvider;
+import wiklosoft.mediaprovider.providers.DropboxProvider;
+import wiklosoft.mediaprovider.providers.GoogleDriveProvider;
+import wiklosoft.mediaprovider.providers.LocalFilesProvider;
 import wiklosoft.mediaprovider.providers.MusicProvider;
 import wiklosoft.mediaprovider.providers.PlaylistsProvider;
+import wiklosoft.mediaprovider.providers.SoundCloudProvider;
 import wiklosoft.mediaprovider.providers.TestMusicProvider;
+import wiklosoft.mediaprovider.providers.YoutubeProvider;
 
 /**
  * Created by Pawel Wiklowski on 07.10.15.
@@ -49,9 +55,14 @@ public class MusicService extends MediaBrowserService{
         Log.d(TAG, "onCreate");
         super.onCreate();
 
-        mMusicProviderList.add(new TestMusicProvider("test1"));
         mMusicProviderList.add(new PlaylistsProvider(this));
 
+        mMusicProviderList.add(new LocalFilesProvider(this));
+        mMusicProviderList.add(new DropboxProvider(this));
+        mMusicProviderList.add(new GoogleDriveProvider(this));
+        mMusicProviderList.add(new SoundCloudProvider(this));
+        mMusicProviderList.add(new DibbleProvider(this));
+        mMusicProviderList.add(new YoutubeProvider(this));
 
         mPlayingQueue = new ArrayList<>();
 
