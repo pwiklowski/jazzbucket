@@ -5,6 +5,7 @@ import android.media.MediaDescription;
 import android.media.MediaMetadata;
 import android.media.MediaMetadataRetriever;
 import android.media.browse.MediaBrowser.MediaItem;
+import android.media.session.MediaSession;
 import android.os.Bundle;
 import android.service.media.MediaBrowserService;
 import android.support.v4.app.Fragment;
@@ -200,11 +201,11 @@ public class DibbleProvider implements MusicProvider {
 
                         List<MediaItem> list = new ArrayList<>();
                         for (JsonElement station: result){
-                            String name = station.getAsJsonObject().get("country_code").getAsString();
-
+                            String name = station.getAsJsonObject().get("name").getAsString();
+                            String code = station.getAsJsonObject().get("country_code").getAsString();
 
                             list.add(new MediaItem(new MediaDescription.Builder()
-                                    .setMediaId(mId + "/" + PATH_COUNTRY+"/"+ name + "/1")
+                                    .setMediaId(mId + "/" + PATH_COUNTRY+"/"+ code + "/1")
                                     .setTitle(name)
                                     .build(), MediaItem.FLAG_BROWSABLE));
                         }
@@ -239,7 +240,8 @@ public class DibbleProvider implements MusicProvider {
                         JsonArray streams = station.getAsJsonObject().get("streams").getAsJsonArray();
 
                         String stream = "";
-                        if (streams.size() >0) stream = streams.get(0).getAsJsonObject().get("stream").getAsString();
+                        if (streams.size() > 0)
+                            stream = streams.get(0).getAsJsonObject().get("stream").getAsString();
 
                         if (!stream.isEmpty()) {
                             list.add(new MediaItem(new MediaDescription.Builder()
