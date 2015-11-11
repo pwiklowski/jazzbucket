@@ -2,29 +2,18 @@ package wiklosoft.mediaprovider.providers;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.media.MediaDescription;
-import android.media.MediaMetadata;
 import android.media.browse.MediaBrowser;
-import android.media.session.MediaSession;
 import android.preference.PreferenceManager;
 import android.service.media.MediaBrowserService;
 import android.support.v4.app.Fragment;
-import android.util.Log;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.kodart.httpzoid.Http;
-import com.kodart.httpzoid.HttpFactory;
-import com.kodart.httpzoid.HttpResponse;
-import com.kodart.httpzoid.NetworkError;
-import com.kodart.httpzoid.ResponseHandler;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import wiklosoft.mediaprovider.MetadataReady;
 import wiklosoft.mediaprovider.MusicReady;
+import wiklosoft.mediaprovider.OAuthClient;
+import wiklosoft.mediaprovider.OAuthClientAuthResult;
 import wiklosoft.mediaprovider.QueueReady;
 
 
@@ -32,6 +21,8 @@ import wiklosoft.mediaprovider.QueueReady;
  * Created by Pawel Wiklowski on 08.10.15.
  */
 public class OAuthProvider implements MusicProvider {
+    private String REFRESH = "REFRESH_";
+    private String ACCESS = "ACCESS_";
     protected String ID = null;
     protected Context mContext;
     protected String mRefreshToken = "";
@@ -40,6 +31,7 @@ public class OAuthProvider implements MusicProvider {
     protected String TOKEN_URL = null;
     protected String CLIENT_ID = null;
     protected String CLIENT_SECRET = null;
+    protected String CALLBACK_URL = "http://localhost/Callback";
 
     public String getAuthUrl(){
         return AUTH_URL;
@@ -54,8 +46,18 @@ public class OAuthProvider implements MusicProvider {
         return CLIENT_SECRET;
     }
 
+    public String getRefreshToken(){
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
+        return sharedPref.getString(REFRESH + ID, "");
+    }
+
+    public String getCallbackUrl(){ return CALLBACK_URL; }
+
     void setRefrehToken(String token){
-        mRefreshToken = token;
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(REFRESH + ID, token);
+        editor.commit();
     }
 
     public OAuthProvider(String id, Context context){
@@ -66,20 +68,48 @@ public class OAuthProvider implements MusicProvider {
 
     public String getToken(){
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
-        return sharedPref.getString(ID, "");
+        return sharedPref.getString(ACCESS + ID, "");
     }
 
     public void setToken(String token){
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(ID, token);
+        editor.putString(ACCESS + ID, token);
         editor.commit();
     }
+    public String getScopes(){
+        return null;
+    }
 
+    public String getAuthExtras(){
+        return null;
+    }
+
+    public String getGrantType(){
+        return "authorization_code";
+    }
+    public String getResponseType(){
+        return "code";
+    }
     @Override
     public String getName() {
         return "No name";
     }
+
+    void refreshToken(){
+        OAuthClient client = new OAuthClient();
+        client.refreshToken(mContext, this, new OAuthClientAuthResult(){
+            @Override
+            public void onAuthorize(String token, String refreshToken) {
+                setToken(token);
+            }
+        });
+
+
+
+
+    }
+
 
     @Override
     public String getId() {

@@ -36,20 +36,8 @@ public class LocalFilesProvider implements MusicProvider {
     HashMap<String, String> files = new HashMap<>();
 
 
-
     public LocalFilesProvider(Context id){
 
-
-    }
-
-
-    @Override
-    public String getToken() {
-        return null;
-    }
-
-    @Override
-    public void setToken(String token) {
 
     }
 

@@ -57,16 +57,6 @@ public class DibbleProvider implements MusicProvider {
 
 
     @Override
-    public String getToken() {
-        return mToken;
-    }
-
-    @Override
-    public void setToken(String token) {
-        mToken = token;
-    }
-
-    @Override
     public String getName() {
         return "Dirble";
     }
@@ -116,7 +106,7 @@ public class DibbleProvider implements MusicProvider {
 
     public void getCategories(final MediaBrowserService.Result<List<MediaItem>> stations) {
         Http http = HttpFactory.create(mContext);
-        http.get("http://api.dirble.com/v2/categories/primary?token=" + getToken())
+        http.get("http://api.dirble.com/v2/categories/primary?token=" +mToken)
                 .contentType("application/json")
                 .handler(new ResponseHandler<JsonArray>() {
                     @Override
@@ -154,7 +144,7 @@ public class DibbleProvider implements MusicProvider {
     }
     public void getContinents(final MediaBrowserService.Result<List<MediaItem>> stations) {
         Http http = HttpFactory.create(mContext);
-        http.get("http://api.dirble.com/v2/continents?token=" + getToken())
+        http.get("http://api.dirble.com/v2/continents?token=" + mToken)
                 .contentType("application/json")
                 .handler(new ResponseHandler<JsonArray>() {
                     @Override
@@ -192,7 +182,7 @@ public class DibbleProvider implements MusicProvider {
     }
     public void getCountries(String continent, final MediaBrowserService.Result<List<MediaItem>> stations) {
         Http http = HttpFactory.create(mContext);
-        http.get("http://api.dirble.com/v2/continents/"+continent+"/countries?token=" + getToken())
+        http.get("http://api.dirble.com/v2/continents/"+continent+"/countries?token=" + mToken)
                 .contentType("application/json")
                 .handler(new ResponseHandler<JsonArray>() {
                     @Override
@@ -222,7 +212,7 @@ public class DibbleProvider implements MusicProvider {
         getStations(id, "countries", stations, page);
     }
     public void getStations(final String id, final String type, final MediaBrowserService.Result<List<MediaItem>> stations, final int page) {
-        String url = "http://api.dirble.com/v2/"+type+"/"+id+"/stations?token=" + getToken();
+        String url = "http://api.dirble.com/v2/"+type+"/"+id+"/stations?token=" + mToken;
         Log.d(TAG, "getStations " + url);
         Http http = HttpFactory.create(mContext);
         http.get(url + "&page="+Integer.toString(page))
@@ -269,7 +259,7 @@ public class DibbleProvider implements MusicProvider {
         id = id.replace(mId +"/"+ PATH_STATION+"/", "");
 
         Http http = HttpFactory.create(mContext);
-        http.get("http://api.dirble.com/v2/station/"+id+"?token="+getToken())
+        http.get("http://api.dirble.com/v2/station/"+id+"?token="+ mToken)
                 .contentType("application/json")
                 .handler(new ResponseHandler<JsonObject>() {
                     @Override
@@ -292,7 +282,7 @@ public class DibbleProvider implements MusicProvider {
         String id = url.replace(mId +"/"+ PATH_STATION+"/", "");
 
         Http http = HttpFactory.create(mContext);
-        http.get("http://api.dirble.com/v2/station/"+id+"?token="+getToken())
+        http.get("http://api.dirble.com/v2/station/"+id+"?token="+mToken)
                 .contentType("application/json")
                 .handler(new ResponseHandler<JsonObject>() {
                     @Override

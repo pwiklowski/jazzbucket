@@ -37,17 +37,6 @@ public class PlaylistsProvider implements MusicProvider {
         mDb = new PlaylistDatabaseHandler(context);
     }
 
-
-    @Override
-    public String getToken() {
-        return null;
-    }
-
-    @Override
-    public void setToken(String token) {
-
-    }
-
     @Override
     public String getName() {
         return "Playlists";

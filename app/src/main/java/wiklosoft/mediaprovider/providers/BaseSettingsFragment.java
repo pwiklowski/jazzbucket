@@ -15,8 +15,12 @@ import com.google.api.client.auth.oauth2.BearerToken;
 import com.google.api.client.auth.oauth2.ClientParametersAuthentication;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.json.jackson.JacksonFactory;
+import com.google.gson.JsonObject;
 import com.wuman.android.auth.AuthorizationFlow;
 import com.wuman.android.auth.AuthorizationUIController;
 import com.wuman.android.auth.DialogFragmentController;
@@ -25,19 +29,20 @@ import com.wuman.android.auth.oauth2.store.SharedPreferencesCredentialStore;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import wiklosoft.mediaprovider.OAuthClient;
+import wiklosoft.mediaprovider.OAuthClientAuthResult;
 import wiklosoft.mediaprovider.R;
 
 /**
  * Created by Pawel Wiklowski on 10.10.15.
  */
 public class BaseSettingsFragment extends Fragment {
-    private MusicProvider mProvider = null;
+    private OAuthProvider mProvider = null;
     private CheckBox mIsConnected = null;
     private Button mAuth = null;
-    private OAuthManager oauth = null;
-    private Credential credential = null;
     protected int mLogo = R.mipmap.no_logo;
 
     public BaseSettingsFragment() {
@@ -48,7 +53,7 @@ public class BaseSettingsFragment extends Fragment {
 
     }
 
-    public void setProvider(MusicProvider provider){
+    public void setProvider(OAuthProvider provider){
         mProvider = provider;
     }
 
@@ -73,54 +78,18 @@ public class BaseSettingsFragment extends Fragment {
         return rootView;
     }
 
-    List<String> getScopes(){
-        return new ArrayList<String>();
-    }
 
     void authorize(){
-        final SharedPreferencesCredentialStore credentialStore =
-                new SharedPreferencesCredentialStore(getActivity(), "preferenceFileName", new JacksonFactory());
-        AuthorizationFlow.Builder builder = new AuthorizationFlow.Builder(
-                BearerToken.authorizationHeaderAccessMethod(),
-                AndroidHttp.newCompatibleTransport(),
-                new JacksonFactory(),
-                new GenericUrl(((OAuthProvider)mProvider).getTokenUrl()),
-                new ClientParametersAuthentication(((OAuthProvider)mProvider).getClientId(), ((OAuthProvider)mProvider).getClientSecret()),
-                ((OAuthProvider)mProvider).getClientId(),
-                ((OAuthProvider)mProvider).getAuthUrl());
-        builder.setCredentialStore(credentialStore);
-        builder.setScopes(getScopes());
 
-        AuthorizationFlow flow = builder.build();
-
-        AuthorizationUIController controller = new DialogFragmentController(getFragmentManager()) {
+        OAuthClient c = new OAuthClient();
+        c.authorize(getFragmentManager(), mProvider, new OAuthClientAuthResult() {
             @Override
-            public String getRedirectUri() throws IOException {
-                return "http://localhost/Callback";
+            public void onAuthorize(String token, String refreshToken) {
+                mProvider.setToken(token);
+                mProvider.setRefrehToken(refreshToken);
+                mIsConnected.setChecked(!mProvider.getToken().isEmpty());
             }
-
-            @Override
-            public boolean isJavascriptEnabledForWebView() {
-                return true;
-            }
-
-        };
-
-
-        oauth = new OAuthManager(flow, controller);
-
-        OAuthManager.OAuthCallback<Credential> callback = new OAuthManager.OAuthCallback<Credential>() {
-            @Override public void run(OAuthManager.OAuthFuture<Credential> future) {
-                try {
-                    credential = future.getResult();
-                    mProvider.setToken(credential.getAccessToken());
-                    mIsConnected.setChecked(!mProvider.getToken().isEmpty());
-                }catch(Exception e){
-                    e.printStackTrace();
-                }
-            }
-        };
-        oauth.authorizeImplicitly(mProvider.getId(), callback, null);
+        });
     }
 
 

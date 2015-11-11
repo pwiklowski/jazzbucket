@@ -16,8 +16,6 @@ import wiklosoft.mediaprovider.QueueReady;
  * Created by Pawel Wiklowski on 07.10.15.
  */
 public interface MusicProvider {
-    String getToken();
-    void setToken(String token);
     String getName();
     String getId();
     void getChildren(String s, MediaBrowserService.Result<List<MediaBrowser.MediaItem>> result);

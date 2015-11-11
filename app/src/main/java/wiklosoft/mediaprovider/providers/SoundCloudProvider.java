@@ -1,10 +1,12 @@
 package wiklosoft.mediaprovider.providers;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.media.MediaDescription;
 import android.media.MediaMetadata;
 import android.media.MediaMetadataRetriever;
 import android.media.browse.MediaBrowser;
+import android.preference.PreferenceManager;
 import android.service.media.MediaBrowserService;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -45,12 +47,33 @@ public class SoundCloudProvider extends OAuthProvider {
 
         AUTH_URL = "https://soundcloud.com/connect";
         TOKEN_URL = "https://api.soundcloud.com/oauth2/token";
-        CLIENT_ID = "0068d0f6733d7079d8a9dc1183f716b4";
-        CLIENT_SECRET = "92791bb8818d4d39f7d1d4d63714b99c";
+        CLIENT_ID = "5cdd2995d85289e5fc99586b5bcee550";
+        CLIENT_SECRET = "b84e8b162585031dbdd7f927397ffaae";
 
         mContext = context;
         getAccountInfo();
     }
+
+    @Override
+    public String getScopes(){
+        return "non-expiring";
+    }
+
+    public String getResponseType(){
+        return "token";
+    }
+
+    @Override
+    public String getGrantType(){
+        return "authorization_code";
+    }
+
+    @Override
+    public void setToken(String token){
+        super.setToken(token);
+        getAccountInfo();
+    }
+
 
     String getUserId(){
         if (userInfo != null){

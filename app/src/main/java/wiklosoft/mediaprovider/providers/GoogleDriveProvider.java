@@ -10,6 +10,7 @@ import android.util.Log;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.kodart.httpzoid.Http;
 import com.kodart.httpzoid.HttpFactory;
 import com.kodart.httpzoid.HttpResponse;
@@ -35,9 +36,19 @@ public class GoogleDriveProvider extends OAuthProvider {
         super("googledrive", context);
         mContext = context;
         AUTH_URL = "https://accounts.google.com/o/oauth2/auth";
-        TOKEN_URL = "hhttps://accounts.google.com/oauth2/v3/token";
+        TOKEN_URL = "https://www.googleapis.com/oauth2/v3/token";
         CLIENT_ID = "94210570259-ltnois2uoourqqcgic7ptqr7cv0gpumc.apps.googleusercontent.com";
         CLIENT_SECRET = "OCOC95FB_Sha140EhSj2fMYJ";
+    }
+
+    @Override
+    public String getAuthExtras(){
+        return "&approval_prompt=force&access_type=offline";
+    }
+
+    @Override
+    public String getScopes(){
+        return "https://www.googleapis.com/auth/drive";
     }
 
     @Override
@@ -91,6 +102,7 @@ public class GoogleDriveProvider extends OAuthProvider {
                     @Override
                     public void error(String message, HttpResponse response) {
                         Log.e(TAG, "error" + message);
+                        handleError(message);
                     }
 
                     @Override
@@ -149,14 +161,6 @@ public class GoogleDriveProvider extends OAuthProvider {
     }
 
     public static class SettingsFragment extends BaseSettingsFragment {
-
-        @Override
-        List<String> getScopes(){
-            List<String> scopes = new ArrayList<>();
-            scopes.add("https://www.googleapis.com/auth/drive");
-
-            return scopes;
-        }
 
         @Override
         public void init(){

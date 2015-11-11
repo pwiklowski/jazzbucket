@@ -64,15 +64,6 @@ public class TestMusicProvider implements MusicProvider {
     }
 
 
-    @Override
-    public String getToken() {
-        return null;
-    }
-
-    @Override
-    public void setToken(String token) {
-
-    }
 
     @Override
     public String getName() {
