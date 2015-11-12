@@ -284,7 +284,45 @@ public class SoundCloudProvider extends OAuthProvider {
                     }
                 }).send();
     }
+    void getFavoritesTracks(String userId, final MediaBrowserService.Result<List<MediaBrowser.MediaItem>> childrens){
+        Http http = HttpFactory.create(mContext);
 
+        String url = "http://api.soundcloud.com/users/"+userId+ "/favorites?client_id=" + getClientId();
+
+        http.get(url)
+                .header("Authorization", "Bearer " + getToken())
+                .contentType("application/json")
+                .handler(new ResponseHandler<JsonArray>() {
+                    @Override
+                    public void success(JsonArray tracks, HttpResponse response) {
+                        Log.d(TAG, "success");
+                        List<MediaBrowser.MediaItem> list = new ArrayList<>();
+                        for(JsonElement track: tracks){
+                            String title = track.getAsJsonObject().get("title").getAsString();
+                            boolean streamable = false;
+                            try {
+                                if (track.getAsJsonObject().has("streamable"))
+                                    streamable = track.getAsJsonObject().get("streamable").getAsBoolean();
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+
+                            String id = Integer.toString(track.getAsJsonObject().get("id").getAsInt());
+
+                            if (streamable) {
+                                MediaBrowser.MediaItem item = new MediaBrowser.MediaItem(new MediaDescription.Builder()
+                                        .setMediaId(getId() + "/" + PATH_TRACKS + "/" + id)
+                                        .setTitle(title)
+                                        .build(), MediaBrowser.MediaItem.FLAG_PLAYABLE);
+
+                                list.add(item);
+                            }
+                        }
+                        childrens.sendResult(list);
+
+                    }
+                }).send();
+    }
     @Override
     public String getName(){
         return "SoundCloud";
@@ -317,6 +355,8 @@ public class SoundCloudProvider extends OAuthProvider {
             childrens.sendResult(list);
         }else if (path.equals(PATH_PLAYLISTS)) {
             getPlaylists(childrens, getUserId());
+        }else if (path.equals(PATH_FAVORITES)) {
+            getFavoritesTracks(getUserId(), childrens);
         }else if (path.startsWith(PATH_TRACKS)) {
             String userId = path.split("/")[1];
             getUserTracks(userId, childrens);
