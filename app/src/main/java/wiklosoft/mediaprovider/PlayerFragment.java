@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -31,6 +32,7 @@ public class PlayerFragment extends Fragment {
     private TextView mArtist = null;
     private Button mPlay = null;
     private TextView status = null;
+    private ImageView mArt = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -40,6 +42,7 @@ public class PlayerFragment extends Fragment {
         mArtist = (TextView) rootView.findViewById(R.id.artist);
         status = (TextView) rootView.findViewById(R.id.status);
         mPlay = (Button) rootView.findViewById(R.id.play);
+        mArt = (ImageView) rootView.findViewById(R.id.art);
 
         mPlay.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -82,6 +85,7 @@ public class PlayerFragment extends Fragment {
     public void onMetadataChanged(MediaMetadata metadata) {
         if (mArtist != null) mArtist.setText(metadata.getText(MediaMetadata.METADATA_KEY_ARTIST));
         if (mTitle != null) mTitle.setText(metadata.getText(MediaMetadata.METADATA_KEY_TITLE));
+        if (mArt != null) mArt.setImageBitmap(metadata.getBitmap(MediaMetadata.METADATA_KEY_ART));
     }
 
 }
