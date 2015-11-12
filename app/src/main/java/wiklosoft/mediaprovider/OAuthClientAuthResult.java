@@ -7,5 +7,5 @@ import com.google.gson.JsonObject;
  */
 public interface OAuthClientAuthResult {
 
-    void onAuthorize(String token, String refreshToken);
+    void onAuthorize(String token, String refreshToken, int valid);
 }

@@ -1,8 +1,6 @@
 package wiklosoft.mediaprovider.providers;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,26 +9,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 
-import com.google.api.client.auth.oauth2.BearerToken;
-import com.google.api.client.auth.oauth2.ClientParametersAuthentication;
-import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
-import com.google.api.client.http.GenericUrl;
-import com.google.api.client.json.jackson.JacksonFactory;
-import com.google.gson.JsonObject;
-import com.wuman.android.auth.AuthorizationFlow;
-import com.wuman.android.auth.AuthorizationUIController;
-import com.wuman.android.auth.DialogFragmentController;
-import com.wuman.android.auth.OAuthManager;
-import com.wuman.android.auth.oauth2.store.SharedPreferencesCredentialStore;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Calendar;
 
 import wiklosoft.mediaprovider.OAuthClient;
 import wiklosoft.mediaprovider.OAuthClientAuthResult;
@@ -84,9 +63,16 @@ public class BaseSettingsFragment extends Fragment {
         OAuthClient c = new OAuthClient();
         c.authorize(getFragmentManager(), mProvider, new OAuthClientAuthResult() {
             @Override
-            public void onAuthorize(String token, String refreshToken) {
+            public void onAuthorize(String token, String refreshToken, int valid) {
                 mProvider.setToken(token);
                 mProvider.setRefrehToken(refreshToken);
+
+                if (valid != 1){
+                    Calendar c = Calendar.getInstance();
+                    c.add(Calendar.SECOND, valid);
+                    mProvider.setTokenExpiration(c.getTime());
+                }
+
                 mIsConnected.setChecked(!mProvider.getToken().isEmpty());
             }
         });

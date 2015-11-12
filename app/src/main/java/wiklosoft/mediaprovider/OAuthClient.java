@@ -1,6 +1,5 @@
 package wiklosoft.mediaprovider;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
@@ -48,8 +47,13 @@ public class OAuthClient {
                     Log.d(TAG, "succes " + result);
                     String token = result.get("access_token").getAsString();
 
+                    int valid = -1;
+                    if (result.has("expires_in"))
+                        valid = result.get("expires_in").getAsInt();
+
+
                     if (callback != null)
-                        callback.onAuthorize(token, null);
+                        callback.onAuthorize(token, null, valid);
                 }
 
                 @Override
@@ -67,6 +71,8 @@ public class OAuthClient {
                     Log.d(TAG, "complete");
                 }
             }).send();
+
+
 
 
     }

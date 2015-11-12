@@ -58,5 +58,4 @@ public interface HttpRequest {
      */
     public Cancellable send();
 
-    public void ssend() throws Exception;
 }

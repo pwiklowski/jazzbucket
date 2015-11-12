@@ -18,6 +18,7 @@ import com.kodart.httpzoid.NetworkError;
 import com.kodart.httpzoid.ResponseHandler;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +64,10 @@ public class YoutubeProvider extends OAuthProvider {
 
     @Override
     public void getChildren(String s, final MediaBrowserService.Result<List<MediaBrowser.MediaItem>> childrens) {
-
+        if (getTokenExpiration().before(new Date()))
+        {
+            refreshToken();
+        }
         Http http = HttpFactory.create(mContext);
         http.get("https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&maxResults=50")
                 .header("Authorization", "Bearer " + getToken())
@@ -114,6 +118,8 @@ public class YoutubeProvider extends OAuthProvider {
 
     @Override
     public void getMediaUrl(String id, final MusicReady callback) {
+
+
         Http http = HttpFactory.create(mContext);
         http.get("http://192.168.1.8:8000/"+id+"/")
                 .header("Authorization", "Bearer " + getToken())
@@ -149,6 +155,10 @@ public class YoutubeProvider extends OAuthProvider {
 
     @Override
     public boolean getMetaData(String id, final MetadataReady callback) {
+        if (getTokenExpiration().before(new Date()))
+        {
+            refreshToken();
+        }
         Http http = HttpFactory.create(mContext);
         http.get("https://www.googleapis.com/youtube/v3/videos?part=snippet%2C+contentDetails&id="+id.replace(getId()+"/",""))
                 .header("Authorization", "Bearer " + getToken())

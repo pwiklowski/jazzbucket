@@ -86,11 +86,15 @@ public class OAuthClientWebView extends DialogFragment {
                                 String token = result.get("access_token").getAsString();
                                 String refreshToken = null;
 
+                                int valid = -1;
+                                if (result.has("expires_in"))
+                                    valid = result.get("expires_in").getAsInt();
+
                                 if (result.has("refresh_token"))
                                     refreshToken = result.get("refresh_token").getAsString();
 
                                 if (mCallback != null)
-                                    mCallback.onAuthorize(token, refreshToken);
+                                    mCallback.onAuthorize(token, refreshToken, valid);
                             }
 
                             @Override
@@ -109,31 +113,6 @@ public class OAuthClientWebView extends DialogFragment {
                             }
                         }).send();
 
-                }
-                else if(url.startsWith(mOAuthProvider.getCallbackUrl()) && url.contains("access_token")){
-                    String token = url;
-                    String refreshToken = null;
-                    if (mCallback != null)
-                        mCallback.onAuthorize(token , refreshToken);
-
-                    String code = url.split("\\?")[1];
-
-                    String[] params = code.split("&");
-
-                    for (int i=0; i< params.length;i++){
-                        String[] var = params[i].split("=");
-                        if (var[0].contains("access_token")){
-                            token = var[1];
-                        }
-
-                    }
-                    if (mCallback != null)
-                        mCallback.onAuthorize(token , refreshToken);
-
-
-
-
-                    dismiss();
                 }
 
             }

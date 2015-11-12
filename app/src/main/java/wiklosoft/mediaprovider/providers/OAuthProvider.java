@@ -6,9 +6,12 @@ import android.media.browse.MediaBrowser;
 import android.preference.PreferenceManager;
 import android.service.media.MediaBrowserService;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 
-import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import wiklosoft.mediaprovider.MetadataReady;
 import wiklosoft.mediaprovider.MusicReady;
@@ -25,7 +28,9 @@ public class OAuthProvider implements MusicProvider {
     private String ACCESS = "ACCESS_";
     protected String ID = null;
     protected Context mContext;
-    protected String mRefreshToken = "";
+
+
+    private Date mTokenExpiration = new Date();
 
     protected String AUTH_URL = null;
     protected String TOKEN_URL = null;
@@ -33,6 +38,13 @@ public class OAuthProvider implements MusicProvider {
     protected String CLIENT_SECRET = null;
     protected String CALLBACK_URL = "http://localhost/Callback";
 
+    public Date getTokenExpiration() {
+        return mTokenExpiration;
+    }
+
+    public void setTokenExpiration(Date tokenExpiration) {
+        mTokenExpiration = tokenExpiration;
+    }
     public String getAuthUrl(){
         return AUTH_URL;
     }
@@ -97,16 +109,30 @@ public class OAuthProvider implements MusicProvider {
     }
 
     void refreshToken(){
-        OAuthClient client = new OAuthClient();
-        client.refreshToken(mContext, this, new OAuthClientAuthResult(){
+        Log.d("OauthProvider", "refreshToken");
+
+        final OAuthClient client = new OAuthClient();
+
+
+        final CountDownLatch refreshed = new CountDownLatch(1);
+        client.refreshToken(mContext, OAuthProvider.this, new OAuthClientAuthResult() {
             @Override
-            public void onAuthorize(String token, String refreshToken) {
+            public void onAuthorize(String token, String refreshToken, int valid) {
                 setToken(token);
+
+                if (valid != 1) {
+                    Calendar c = Calendar.getInstance();
+                    c.add(Calendar.SECOND, valid);
+                    setTokenExpiration(c.getTime());
+                }
+                refreshed.countDown();
             }
         });
-
-
-
+        try {
+            refreshed.await();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
     }
 

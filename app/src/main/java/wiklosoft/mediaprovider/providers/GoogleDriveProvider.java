@@ -10,14 +10,15 @@ import android.util.Log;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.kodart.httpzoid.Http;
 import com.kodart.httpzoid.HttpFactory;
+import com.kodart.httpzoid.HttpRequest;
 import com.kodart.httpzoid.HttpResponse;
 import com.kodart.httpzoid.NetworkError;
 import com.kodart.httpzoid.ResponseHandler;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +60,9 @@ public class GoogleDriveProvider extends OAuthProvider {
     @Override
     public void getChildren(String s, final MediaBrowserService.Result<List<MediaBrowser.MediaItem>> childrens) {
 
+        if (getTokenExpiration().before(new Date())){
+            refreshToken();
+        }
 
         String path = s.replace(getId(), "");
         if(path.startsWith("/")) path = path.substring(1);
@@ -72,53 +76,59 @@ public class GoogleDriveProvider extends OAuthProvider {
         String fields = "items(id%2CmimeType%2Ctitle)";
 
         Http http = HttpFactory.create(mContext);
-        http.get("https://www.googleapis.com/drive/v2/files?orderBy=title&q=" + q + "&fields="+fields)
-                .header("Authorization", "Bearer " + getToken())
-                .contentType("application/json")
-                .handler(new ResponseHandler<JsonObject>() {
-                    @Override
-                    public void success(JsonObject result, HttpResponse response) {
-                        Log.d(TAG, "success");
-                        List<MediaBrowser.MediaItem> list = new ArrayList<>();
-                        JsonArray files = result.get("items").getAsJsonArray();
-                        for (JsonElement file : files) {
-                            JsonObject fileObject = file.getAsJsonObject();
-                            String filename = fileObject.get("title").getAsString();
-                            String id = fileObject.get("id").getAsString();
+        http.get("https://www.googleapis.com/drive/v2/files?orderBy=title&q=" + q + "&fields=" + fields)
+            .header("Authorization", "Bearer " + getToken())
+            .contentType("application/json")
+            .handler(new ResponseHandler<JsonObject>() {
+                @Override
+                public void success(JsonObject result, HttpResponse response) {
+                    Log.d(TAG, "success");
+                    List<MediaBrowser.MediaItem> list = new ArrayList<>();
+                    JsonArray files = result.get("items").getAsJsonArray();
+                    for (JsonElement file : files) {
+                        JsonObject fileObject = file.getAsJsonObject();
+                        String filename = fileObject.get("title").getAsString();
+                        String id = fileObject.get("id").getAsString();
 
-                            Log.d(TAG, filename);
+                        Log.d(TAG, filename);
 
-                            boolean isFile = !fileObject.get("mimeType").getAsString().equals("application/vnd.google-apps.folder");
+                        boolean isFile = !fileObject.get("mimeType").getAsString().equals("application/vnd.google-apps.folder");
 
-                                MediaBrowser.MediaItem item = new MediaBrowser.MediaItem(new MediaDescription.Builder()
-                                    .setMediaId(getId() + "/" + id)
-                                    .setTitle(filename)
-                                    .build(), isFile ? MediaBrowser.MediaItem.FLAG_PLAYABLE : MediaBrowser.MediaItem.FLAG_BROWSABLE);
-                            list.add(item);
-                        }
-                        childrens.sendResult(list);
+                            MediaBrowser.MediaItem item = new MediaBrowser.MediaItem(new MediaDescription.Builder()
+                                .setMediaId(getId() + "/" + id)
+                                .setTitle(filename)
+                                .build(), isFile ? MediaBrowser.MediaItem.FLAG_PLAYABLE : MediaBrowser.MediaItem.FLAG_BROWSABLE);
+                        list.add(item);
                     }
+                    childrens.sendResult(list);
+                }
 
-                    @Override
-                    public void error(String message, HttpResponse response) {
-                        Log.e(TAG, "error" + message);
-                        handleError(message);
-                    }
+                @Override
+                public void error(String message, HttpResponse response) {
+                    Log.e(TAG, "error" + message);
+                }
 
-                    @Override
-                    public void failure(NetworkError error) {
-                        Log.e(TAG, "failure" + error);
-                    }
+                @Override
+                public void failure(NetworkError error) {
+                                                      Log.e(TAG, "failure" + error);
+                                                                                                                  }
 
-                    @Override
-                    public void complete() {
-                        Log.d(TAG, "complete");
-                    }
-                }).send();
+                @Override
+                public void complete() {
+                                     Log.d(TAG, "complete");
+                                                                         }
+            }).send();
+
+
     }
+
+
 
     @Override
     public void getMediaUrl(String id, final MusicReady callback) {
+        if (getTokenExpiration().before(new Date())){
+            refreshToken();
+        }
         String link = "https://www.googleapis.com/drive/v2/files/"+id.replace(getId()+"/","")+"?fields=downloadUrl";
 
         Http http = HttpFactory.create(mContext);

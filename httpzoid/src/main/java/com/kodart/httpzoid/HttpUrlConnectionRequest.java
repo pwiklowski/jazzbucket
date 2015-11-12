@@ -93,14 +93,15 @@ public class HttpUrlConnectionRequest implements HttpRequest {
                     init(connection);
                     sendData(connection);
                     final HttpDataResponse response = readData(connection);
+                    if (response.getCode() < 400)
+                        handler.success(response.getData(), response);
+                    else {
+                        handler.error((String) response.getData(), response);
+                    }
                     return new Action() {
                         @Override
                         public void call() {
-                            if (response.getCode() < 400)
-                                handler.success(response.getData(), response);
-                            else {
-                                handler.error((String) response.getData(), response);
-                            }
+
                         }
                     };
 
@@ -130,57 +131,7 @@ public class HttpUrlConnectionRequest implements HttpRequest {
         }.execute());
     }
 
-    public class DoRequest extends AsyncTask<Void, Void, Action> {
-        @Override
-        protected Action doInBackground(Void... params) {
-            Log.d(TAG, "Start task");
-            HttpURLConnection connection = null;
 
-            try {
-                connection = (HttpURLConnection) url.openConnection(proxy);
-                init(connection);
-                sendData(connection);
-                final HttpDataResponse response = readData(connection);
-                return new Action() {
-                    @Override
-                    public void call() {
-                        if (response.getCode() < 400)
-                            handler.success(response.getData(), response);
-                        else {
-                            handler.error((String) response.getData(), response);
-                        }
-                    }
-                };
-
-            } catch (HttpzoidException e) {
-                Log.e(TAG, e.getMessage());
-                return new NetworkFailureAction(handler, e.getNetworkError());
-            } catch (SocketTimeoutException e) {
-                Log.e(TAG, e.getMessage());
-                return new NetworkFailureAction(handler, NetworkError.Timeout);
-            } catch (ProtocolException e) {
-                Log.wtf(TAG, e.getMessage());
-                return new NetworkFailureAction(handler, NetworkError.UnsupportedMethod);
-            } catch (Throwable e) {
-                Log.wtf(TAG, e);
-                return new NetworkFailureAction(handler, NetworkError.Unknown);
-            } finally {
-                if (connection != null)
-                    connection.disconnect();
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Action action) {
-            action.call();
-            handler.complete();
-        }
-    }
-
-    @Override
-    public void ssend() throws Exception{
-        new DoRequest().get();
-    }
 
     private HttpDataResponse readData(HttpURLConnection connection) throws NetworkAuthenticationException, IOException {
         int responseCode = getResponseCode(connection);
