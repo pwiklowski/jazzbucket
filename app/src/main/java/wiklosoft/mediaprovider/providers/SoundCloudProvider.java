@@ -1,12 +1,13 @@
 package wiklosoft.mediaprovider.providers;
 
+import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaDescription;
 import android.media.MediaMetadata;
-import android.media.MediaMetadataRetriever;
 import android.media.browse.MediaBrowser;
-import android.preference.PreferenceManager;
+import android.net.Uri;
 import android.service.media.MediaBrowserService;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -20,10 +21,11 @@ import com.kodart.httpzoid.HttpResponse;
 import com.kodart.httpzoid.NetworkError;
 import com.kodart.httpzoid.ResponseHandler;
 
+import org.json.JSONArray;
+
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import wiklosoft.mediaprovider.MetadataReady;
 import wiklosoft.mediaprovider.MusicReady;
@@ -37,7 +39,13 @@ public class SoundCloudProvider extends OAuthProvider {
     private String TAG = "SoundCloudProvider";
     private JsonObject userInfo = null;
 
+    private final String PATH_PLAYLIST = "playlist";
     private final String PATH_PLAYLISTS = "playlists";
+    private final String PATH_FOLLOWINGS = "followings";
+
+    private final String PATH_FAVORITES = "favorites";
+
+
     private final String PATH_ROOT = "/";
     private final String PATH_TRACKS = "tracks";
 
@@ -110,10 +118,10 @@ public class SoundCloudProvider extends OAuthProvider {
                     }
             }).send();
     }
-    void getPlaylists(final MediaBrowserService.Result<List<MediaBrowser.MediaItem>> childrens){
+    void getPlaylists(final MediaBrowserService.Result<List<MediaBrowser.MediaItem>> childrens, String userId){
         Http http = HttpFactory.create(mContext);
 
-        String url = "http://api.soundcloud.com/users/"+getUserId()+ "/playlists?client_id=" + getClientId();
+        String url = "http://api.soundcloud.com/users/"+ userId + "/playlists?client_id=" + getClientId();
 
         http.get(url)
             .header("Authorization", "Bearer " + getToken())
@@ -129,7 +137,7 @@ public class SoundCloudProvider extends OAuthProvider {
                             String id = Integer.toString(playlist.getAsJsonObject().get("id").getAsInt());
 
                             MediaBrowser.MediaItem item = new MediaBrowser.MediaItem(new MediaDescription.Builder()
-                                    .setMediaId(getId() + "/" + PATH_PLAYLISTS + "/" + id)
+                                    .setMediaId(getId() + "/" + PATH_PLAYLIST + "/" + id)
                                     .setTitle(title)
                                     .build(), MediaBrowser.MediaItem.FLAG_BROWSABLE);
 
@@ -139,24 +147,50 @@ public class SoundCloudProvider extends OAuthProvider {
                         childrens.sendResult(list);
 
                     }
-
-                    @Override
-                    public void error(String message, HttpResponse response) {
-                        Log.e(TAG, "error" + message);
-                    }
-
-                    @Override
-                    public void failure(NetworkError error) {
-                        Log.e(TAG, "failure" + error);
-                    }
-
-                    @Override
-                    public void complete() {
-                        Log.d(TAG, "complete");
-                    }
             }).send();
     }
-    void getTracks(String playlistId, final MediaBrowserService.Result<List<MediaBrowser.MediaItem>> childrens){
+
+    void getFollowings(final MediaBrowserService.Result<List<MediaBrowser.MediaItem>> childrens){
+        Http http = HttpFactory.create(mContext);
+
+        String url = "http://api.soundcloud.com/users/"+getUserId()+ "/followings?client_id=" + getClientId();
+
+        http.get(url)
+                .header("Authorization", "Bearer " + getToken())
+                .contentType("application/json")
+                .handler(new ResponseHandler<JsonArray>() {
+                    @Override
+                    public void success(JsonArray result, HttpResponse response) {
+                        Log.d(TAG, "success");
+                        List<MediaBrowser.MediaItem> list = new ArrayList<>();
+
+                        for (JsonElement user : result) {
+                            JsonObject u = user.getAsJsonObject();
+                            String title = u.get("username").getAsString();
+                            String id = Integer.toString(u.get("id").getAsInt());
+                            String avatar = "";
+
+                            if (u.has("avatar_url")) {
+                                avatar = u.get("avatar_url").getAsString();
+                            }
+
+                            MediaBrowser.MediaItem item = new MediaBrowser.MediaItem(new MediaDescription.Builder()
+                                    .setMediaId(getId() + "/" + PATH_FOLLOWINGS + "/" + id)
+                                    .setTitle(title)
+                                    .setIconUri(Uri.parse(avatar))
+                                    .build(), MediaBrowser.MediaItem.FLAG_BROWSABLE);
+
+                            list.add(item);
+                        }
+
+                        childrens.sendResult(list);
+
+                    }
+                }).send();
+    }
+
+
+    void getPlaylistTracks(String playlistId, final MediaBrowserService.Result<List<MediaBrowser.MediaItem>> childrens){
         Http http = HttpFactory.create(mContext);
 
         String url = "http://api.soundcloud.com/playlists/"+playlistId+ "?client_id=" + getClientId();
@@ -172,7 +206,14 @@ public class SoundCloudProvider extends OAuthProvider {
                         JsonArray tracks = result.get("tracks").getAsJsonArray();
                         for(JsonElement track: tracks){
                             String title = track.getAsJsonObject().get("title").getAsString();
-                            boolean streamable = track.getAsJsonObject().get("streamable").getAsBoolean();
+                            boolean streamable = false;
+                            try {
+                                if (track.getAsJsonObject().has("streamable"))
+                                    streamable = track.getAsJsonObject().get("streamable").getAsBoolean();
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+
                             String id = Integer.toString(track.getAsJsonObject().get("id").getAsInt());
 
                             if (streamable) {
@@ -204,7 +245,45 @@ public class SoundCloudProvider extends OAuthProvider {
                     }
                 }).send();
     }
+    void getUserTracks(String userId, final MediaBrowserService.Result<List<MediaBrowser.MediaItem>> childrens){
+        Http http = HttpFactory.create(mContext);
 
+        String url = "http://api.soundcloud.com/users/"+userId+ "/tracks?client_id=" + getClientId();
+
+        http.get(url)
+                .header("Authorization", "Bearer " + getToken())
+                .contentType("application/json")
+                .handler(new ResponseHandler<JsonArray>() {
+                    @Override
+                    public void success(JsonArray tracks, HttpResponse response) {
+                        Log.d(TAG, "success");
+                        List<MediaBrowser.MediaItem> list = new ArrayList<>();
+                        for(JsonElement track: tracks){
+                            String title = track.getAsJsonObject().get("title").getAsString();
+                            boolean streamable = false;
+                            try {
+                                if (track.getAsJsonObject().has("streamable"))
+                                    streamable = track.getAsJsonObject().get("streamable").getAsBoolean();
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+
+                            String id = Integer.toString(track.getAsJsonObject().get("id").getAsInt());
+
+                            if (streamable) {
+                                MediaBrowser.MediaItem item = new MediaBrowser.MediaItem(new MediaDescription.Builder()
+                                        .setMediaId(getId() + "/" + PATH_TRACKS + "/" + id)
+                                        .setTitle(title)
+                                        .build(), MediaBrowser.MediaItem.FLAG_PLAYABLE);
+
+                                list.add(item);
+                            }
+                        }
+                        childrens.sendResult(list);
+
+                    }
+                }).send();
+    }
 
     @Override
     public String getName(){
@@ -218,18 +297,55 @@ public class SoundCloudProvider extends OAuthProvider {
 
         List<MediaBrowser.MediaItem> list = new ArrayList<>();
         if (path.isEmpty()) {
-            MediaBrowser.MediaItem item = new MediaBrowser.MediaItem(new MediaDescription.Builder()
+            list.add(new MediaBrowser.MediaItem(new MediaDescription.Builder()
                     .setMediaId(getId() + "/" + PATH_PLAYLISTS)
                     .setTitle("Playlists")
-                    .build(), MediaBrowser.MediaItem.FLAG_BROWSABLE);
-            list.add(item);
+                    .build(), MediaBrowser.MediaItem.FLAG_BROWSABLE));
+
+
+            list.add(new MediaBrowser.MediaItem(new MediaDescription.Builder()
+                    .setMediaId(getId() + "/" + PATH_FAVORITES)
+                    .setTitle("Favorites")
+                    .build(), MediaBrowser.MediaItem.FLAG_BROWSABLE));
+
+
+            list.add(new MediaBrowser.MediaItem(new MediaDescription.Builder()
+                    .setMediaId(getId() + "/" + PATH_FOLLOWINGS)
+                    .setTitle("Followings")
+                    .build(), MediaBrowser.MediaItem.FLAG_BROWSABLE));
+
             childrens.sendResult(list);
         }else if (path.equals(PATH_PLAYLISTS)) {
-            getPlaylists(childrens);
+            getPlaylists(childrens, getUserId());
+        }else if (path.startsWith(PATH_TRACKS)) {
+            String userId = path.split("/")[1];
+            getUserTracks(userId, childrens);
         }else if (path.startsWith(PATH_PLAYLISTS)) {
+            String userId = path.split("/")[1];
+            getPlaylists(childrens, userId);
+        }else if (path.startsWith(PATH_PLAYLIST)) {
             String playlistId = path.split("/")[1];
-            getTracks(playlistId, childrens);
+            getPlaylistTracks(playlistId, childrens);
+        }else if (path.equals(PATH_FOLLOWINGS)){
+            getFollowings(childrens);
+        }else if (path.startsWith(PATH_FOLLOWINGS)) {
+            String userID = path.split("/")[1];
+
+
+            list.add(new MediaBrowser.MediaItem(new MediaDescription.Builder()
+                    .setMediaId(getId() + "/"+ PATH_PLAYLISTS +"/" +userID)
+                    .setTitle("Playlists")
+                    .build(), MediaBrowser.MediaItem.FLAG_BROWSABLE));
+
+
+            list.add(new MediaBrowser.MediaItem(new MediaDescription.Builder()
+                    .setMediaId(getId() + "/"+ PATH_TRACKS + "/" + userID)
+                    .setTitle("Tracks")
+                    .build(), MediaBrowser.MediaItem.FLAG_BROWSABLE));
+
+            childrens.sendResult(list);
         }
+
 
     }
 
@@ -247,24 +363,9 @@ public class SoundCloudProvider extends OAuthProvider {
                     public void success(JsonObject result, HttpResponse response) {
                         Log.d(TAG, "success");
 
-                        callback.ready(result.get("stream_url").getAsString()+"?client_id=" + getClientId(), null);
+                        callback.ready(result.get("stream_url").getAsString() + "?client_id=" + getClientId(), null);
 
 
-                    }
-
-                    @Override
-                    public void error(String message, HttpResponse response) {
-                        Log.e(TAG, "error" + message);
-                    }
-
-                    @Override
-                    public void failure(NetworkError error) {
-                        Log.e(TAG, "failure" + error);
-                    }
-
-                    @Override
-                    public void complete() {
-                        Log.d(TAG, "complete");
                     }
                 }).send();
     }
@@ -281,14 +382,30 @@ public class SoundCloudProvider extends OAuthProvider {
                 .contentType("application/json")
                 .handler(new ResponseHandler<JsonObject>() {
                     @Override
-                    public void success(JsonObject result, HttpResponse response) {
+                    public void success(final JsonObject result, HttpResponse response) {
                         Log.d(TAG, "success");
-                        MediaMetadata.Builder b = new MediaMetadata.Builder();
-                        b.putString(MediaMetadata.METADATA_KEY_ARTIST, result.get("tag_list").getAsString());
+                        final MediaMetadata.Builder b = new MediaMetadata.Builder();
                         b.putString(MediaMetadata.METADATA_KEY_TITLE, result.get("title").getAsString());
                         b.putLong(MediaMetadata.METADATA_KEY_DURATION, result.get("duration").getAsInt());
 
-                        callback.ready(b.build());
+                        b.putString(MediaMetadata.METADATA_KEY_ALBUM_ART_URI, result.get("artwork_url").getAsString());
+
+                        Thread t = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    Bitmap art = BitmapFactory.decodeStream(new URL(result.get("artwork_url").getAsString()).openConnection().getInputStream());
+                                    b.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, art);
+                                    b.putBitmap(MediaMetadata.METADATA_KEY_ART, art);
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                callback.ready(b.build());
+                            }
+                        });
+                        t.start();
+
 
                     }
 
