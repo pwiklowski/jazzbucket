@@ -122,6 +122,7 @@ public class SoundCloudProvider extends OAuthProvider {
                             String title = playlist.getAsJsonObject().get("title").getAsString();
                             String id = Integer.toString(playlist.getAsJsonObject().get("id").getAsInt());
 
+
                             MediaBrowser.MediaItem item = new MediaBrowser.MediaItem(new MediaDescription.Builder()
                                     .setMediaId(getId() + "/" + PATH_PLAYLIST + "/" + id)
                                     .setTitle(title)
@@ -192,6 +193,8 @@ public class SoundCloudProvider extends OAuthProvider {
                         JsonArray tracks = result.get("tracks").getAsJsonArray();
                         for(JsonElement track: tracks){
                             String title = track.getAsJsonObject().get("title").getAsString();
+                            String artwork = track.getAsJsonObject().get("artwork_url").getAsString();
+
                             boolean streamable = false;
                             try {
                                 if (track.getAsJsonObject().has("streamable"))
@@ -206,6 +209,7 @@ public class SoundCloudProvider extends OAuthProvider {
                                 MediaBrowser.MediaItem item = new MediaBrowser.MediaItem(new MediaDescription.Builder()
                                         .setMediaId(getId() + "/" + PATH_TRACKS + "/" + id)
                                         .setTitle(title)
+                                        .setIconUri(Uri.parse(artwork))
                                         .build(), MediaBrowser.MediaItem.FLAG_PLAYABLE);
 
                                 list.add(item);
@@ -246,6 +250,7 @@ public class SoundCloudProvider extends OAuthProvider {
                         List<MediaBrowser.MediaItem> list = new ArrayList<>();
                         for(JsonElement track: tracks){
                             String title = track.getAsJsonObject().get("title").getAsString();
+                            String artwork = track.getAsJsonObject().get("artwork_url").getAsString();
                             boolean streamable = false;
                             try {
                                 if (track.getAsJsonObject().has("streamable"))
@@ -260,6 +265,7 @@ public class SoundCloudProvider extends OAuthProvider {
                                 MediaBrowser.MediaItem item = new MediaBrowser.MediaItem(new MediaDescription.Builder()
                                         .setMediaId(getId() + "/" + PATH_TRACKS + "/" + id)
                                         .setTitle(title)
+                                        .setIconUri(Uri.parse(artwork))
                                         .build(), MediaBrowser.MediaItem.FLAG_PLAYABLE);
 
                                 list.add(item);
@@ -360,6 +366,7 @@ public class SoundCloudProvider extends OAuthProvider {
                         List<MediaBrowser.MediaItem> list = new ArrayList<>();
                         for(JsonElement track: tracks){
                             String title = track.getAsJsonObject().get("title").getAsString();
+                            String artwork = track.getAsJsonObject().get("artwork_url").getAsString();
                             boolean streamable = false;
                             try {
                                 if (track.getAsJsonObject().has("streamable"))
@@ -374,6 +381,7 @@ public class SoundCloudProvider extends OAuthProvider {
                                 MediaBrowser.MediaItem item = new MediaBrowser.MediaItem(new MediaDescription.Builder()
                                         .setMediaId(getId() + "/" + PATH_TRACKS + "/" + id)
                                         .setTitle(title)
+                                        .setIconUri(Uri.parse(artwork))
                                         .build(), MediaBrowser.MediaItem.FLAG_PLAYABLE);
 
                                 list.add(item);
@@ -384,6 +392,9 @@ public class SoundCloudProvider extends OAuthProvider {
                     }
                 }).send();
     }
+
+
+
     @Override
     public String getName(){
         return "SoundCloud";
@@ -503,21 +514,7 @@ public class SoundCloudProvider extends OAuthProvider {
 
                         b.putString(MediaMetadata.METADATA_KEY_ALBUM_ART_URI, result.get("artwork_url").getAsString());
 
-                        Thread t = new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    Bitmap art = BitmapFactory.decodeStream(new URL(result.get("artwork_url").getAsString()).openConnection().getInputStream());
-                                    b.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, art);
-                                    b.putBitmap(MediaMetadata.METADATA_KEY_ART, art);
-
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                                callback.ready(b.build());
-                            }
-                        });
-                        t.start();
+                        callback.ready(b.build());
 
 
                     }
