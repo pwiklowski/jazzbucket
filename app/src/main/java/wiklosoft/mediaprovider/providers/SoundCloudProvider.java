@@ -23,6 +23,7 @@ import com.kodart.httpzoid.ResponseHandler;
 
 import org.json.JSONArray;
 
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +43,7 @@ public class SoundCloudProvider extends OAuthProvider {
     private final String PATH_PLAYLIST = "playlist";
     private final String PATH_PLAYLISTS = "playlists";
     private final String PATH_FOLLOWINGS = "followings";
-
+    private final String PATH_GROUPS = "groups";
     private final String PATH_FAVORITES = "favorites";
 
 
@@ -100,21 +101,6 @@ public class SoundCloudProvider extends OAuthProvider {
                     public void success(JsonObject result, HttpResponse response) {
                         Log.d(TAG, "success");
                         userInfo = result;
-                    }
-
-                    @Override
-                    public void error(String message, HttpResponse response) {
-                        Log.e(TAG, "error" + message);
-                    }
-
-                    @Override
-                    public void failure(NetworkError error) {
-                        Log.e(TAG, "failure" + error);
-                    }
-
-                    @Override
-                    public void complete() {
-                        Log.d(TAG, "complete");
                     }
             }).send();
     }
@@ -284,6 +270,81 @@ public class SoundCloudProvider extends OAuthProvider {
                     }
                 }).send();
     }
+
+    void getGroupTracks(String groupId, final MediaBrowserService.Result<List<MediaBrowser.MediaItem>> childrens){
+        Http http = HttpFactory.create(mContext);
+
+        String url = "http://api.soundcloud.com/groups/"+ groupId + "/tracks?client_id=" + getClientId();
+
+        http.get(url)
+                .header("Authorization", "Bearer " + getToken())
+                .contentType("application/json")
+                .handler(new ResponseHandler<JsonArray>() {
+                    @Override
+                    public void success(JsonArray tracks, HttpResponse response) {
+                        Log.d(TAG, "success");
+                        List<MediaBrowser.MediaItem> list = new ArrayList<>();
+                        for(JsonElement track: tracks){
+                            String title = track.getAsJsonObject().get("title").getAsString();
+                            String artwork = track.getAsJsonObject().get("artwork_url").getAsString();
+                            boolean streamable = false;
+                            try {
+                                if (track.getAsJsonObject().has("streamable"))
+                                    streamable = track.getAsJsonObject().get("streamable").getAsBoolean();
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+
+                            String id = Integer.toString(track.getAsJsonObject().get("id").getAsInt());
+
+                            if (streamable) {
+                                MediaBrowser.MediaItem item = new MediaBrowser.MediaItem(new MediaDescription.Builder()
+                                        .setMediaId(getId() + "/" + PATH_TRACKS + "/" + id)
+                                        .setTitle(title)
+                                        .setIconUri(Uri.parse(artwork))
+                                        .build(), MediaBrowser.MediaItem.FLAG_PLAYABLE);
+
+                                list.add(item);
+                            }
+                        }
+                        childrens.sendResult(list);
+
+                    }
+                }).send();
+    }
+
+    void getGroups(String userId, final MediaBrowserService.Result<List<MediaBrowser.MediaItem>> childrens){
+        Http http = HttpFactory.create(mContext);
+
+        String url = "http://api.soundcloud.com/users/"+userId+ "/groups?client_id=" + getClientId();
+
+        http.get(url)
+                .header("Authorization", "Bearer " + getToken())
+                .contentType("application/json")
+                .handler(new ResponseHandler<JsonArray>() {
+                    @Override
+                    public void success(JsonArray groups, HttpResponse response) {
+                        Log.d(TAG, "success");
+                        List<MediaBrowser.MediaItem> list = new ArrayList<>();
+                        for(JsonElement group: groups){
+                            String name = group.getAsJsonObject().get("name").getAsString();
+                            String artwork = group.getAsJsonObject().get("artwork_url").getAsString();
+                            String id = Integer.toString(group.getAsJsonObject().get("id").getAsInt());
+
+                            MediaBrowser.MediaItem item = new MediaBrowser.MediaItem(new MediaDescription.Builder()
+                                    .setMediaId(getId() + "/" + PATH_GROUPS + "/" + id)
+                                    .setIconUri(Uri.parse(artwork))
+                                    .setTitle(name)
+                                    .build(), MediaBrowser.MediaItem.FLAG_BROWSABLE);
+
+                            list.add(item);
+                        }
+                        childrens.sendResult(list);
+
+                    }
+                }).send();
+    }
+
     void getFavoritesTracks(String userId, final MediaBrowserService.Result<List<MediaBrowser.MediaItem>> childrens){
         Http http = HttpFactory.create(mContext);
 
@@ -352,11 +413,23 @@ public class SoundCloudProvider extends OAuthProvider {
                     .setTitle("Followings")
                     .build(), MediaBrowser.MediaItem.FLAG_BROWSABLE));
 
+            list.add(new MediaBrowser.MediaItem(new MediaDescription.Builder()
+                    .setMediaId(getId() + "/" +PATH_GROUPS)
+                    .setTitle("Groups")
+                    .build(), MediaBrowser.MediaItem.FLAG_BROWSABLE));
+
             childrens.sendResult(list);
         }else if (path.equals(PATH_PLAYLISTS)) {
             getPlaylists(childrens, getUserId());
         }else if (path.equals(PATH_FAVORITES)) {
             getFavoritesTracks(getUserId(), childrens);
+        }else if (path.equals(PATH_GROUPS)) {
+            getGroups(getUserId(), childrens);
+
+        }else if (path.startsWith(PATH_GROUPS)) {
+            String groupId = path.split("/")[1];
+            getGroupTracks(groupId, childrens);
+
         }else if (path.startsWith(PATH_TRACKS)) {
             String userId = path.split("/")[1];
             getUserTracks(userId, childrens);
