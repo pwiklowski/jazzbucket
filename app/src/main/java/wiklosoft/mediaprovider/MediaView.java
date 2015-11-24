@@ -52,6 +52,7 @@ public class MediaView extends Fragment{
         mMediaViewAdapter = new MediaViewAdapter(getActivity(), new ArrayList<MediaBrowser.MediaItem>());
         mListView.setAdapter(mMediaViewAdapter);
         mListView.setOnItemClickListener(mOnItemClickListener);
+        mListView.setOnItemLongClickListener(mOnItemLongClickListener);
         return rootView;
     }
 
@@ -86,6 +87,21 @@ public class MediaView extends Fragment{
         }
     };
 
+    AdapterView.OnItemLongClickListener mOnItemLongClickListener = new AdapterView.OnItemLongClickListener() {
+        @Override
+        public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+            if (mMediaBrowser != null){
+                MediaBrowser.MediaItem item = mMediaViewAdapter.getItem(i);
+                if (item.isPlayable()) {
+                    ItemMenuDialog id = new ItemMenuDialog();
+                    id.setItem(item);
+                    id.show(getFragmentManager(), "dialog");
+                }
+                return true;
+            }
+            return false;
+        }
+    };
     public String getMediaId() {
         return mMediaId;
     }
@@ -112,8 +128,6 @@ public class MediaView extends Fragment{
                     mMediaViewAdapter.clear();
                     mMediaViewAdapter.addAll(children);
                     mMediaViewAdapter.notifyDataSetChanged();
-
-
                 } catch (Throwable t) {
                     t.printStackTrace();
                 }
