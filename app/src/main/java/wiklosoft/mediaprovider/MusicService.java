@@ -84,7 +84,9 @@ public class MusicService extends MediaBrowserService{
         mMusicService = this;
     }
 
-
+    List<MediaSession.QueueItem> getPlaylist(){
+        return mPlayingQueue;
+    }
 
     static MusicService getService() {
             return mMusicService;

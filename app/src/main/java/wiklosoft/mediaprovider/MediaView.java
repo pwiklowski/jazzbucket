@@ -3,9 +3,11 @@ package wiklosoft.mediaprovider;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.IntentFilter;
+import android.media.MediaDescription;
 import android.media.MediaMetadata;
 import android.media.browse.MediaBrowser;
 import android.media.session.MediaController;
+import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
@@ -18,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -32,17 +35,21 @@ public class MediaView extends Fragment{
     private final String TAG = "MediaView";
     ListView mListView = null;
     MainActivity mMainActivity = null;
-    private String mMediaId;
+    private String mMediaId = "/";
+    private String mParentId;
     MediaViewAdapter mMediaViewAdapter = null;
     MediaBrowser mMediaBrowser = null;
+    ProgressBar mProgressBar = null;
     private static final String ARG_MEDIA_ID = "media_id";
-
+    private static final String GET_BACK_ID = "get_bacK_id";
+    List<MediaBrowser.MediaItem> mListItems = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.media_view, container, false);
         mListView = (ListView) rootView.findViewById(R.id.mediaList);
-        mMediaViewAdapter = new MediaViewAdapter(getContext(), new ArrayList<MediaBrowser.MediaItem>());
+        mProgressBar = (ProgressBar) rootView.findViewById(R.id.progressBar);
+        mMediaViewAdapter = new MediaViewAdapter(getActivity(), new ArrayList<MediaBrowser.MediaItem>());
         mListView.setAdapter(mMediaViewAdapter);
         mListView.setOnItemClickListener(mOnItemClickListener);
         return rootView;
@@ -55,23 +62,32 @@ public class MediaView extends Fragment{
                 MediaBrowser.MediaItem item = mMediaViewAdapter.getItem(i);
 
                 if (item.isBrowsable()) {
-                    MediaView mv = new MediaView();
-                    mv.setMediaId(item.getMediaId());
-                    FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                    transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left, android.R.anim.slide_in_left, android.R.anim.slide_out_right);
 
-                    transaction.replace(R.id.container, mv).addToBackStack("").commit();
+                    if (item.getMediaId() == GET_BACK_ID){
+                        getActivity().getSupportFragmentManager().popBackStack();
+                    }else {
+                        MediaView mv = new MediaView();
+                        mv.setMediaId(item.getMediaId());
+                        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+                        transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left, android.R.anim.slide_in_left, android.R.anim.slide_out_right);
+                        transaction.replace(R.id.container, mv).addToBackStack("").commit();
+                    }
+                }else if (item.isPlayable()){
+
+                    MediaController mc = getActivity().getMediaController();
+                    mc.getQueue().clear();
+                    for (int j=0; j<mListItems.size(); j++){
+                        mc.getQueue().add(new MediaSession.QueueItem(item.getDescription(), j));
+                    }
+
+                    mc.getTransportControls().playFromMediaId(item.getMediaId(), null);
                 }
             }
         }
     };
 
     public String getMediaId() {
-        Bundle args = getArguments();
-        if (args != null) {
-            return args.getString(ARG_MEDIA_ID);
-        }
-        return null;
+        return mMediaId;
     }
 
     public void setMediaId(String mediaId) {
@@ -82,10 +98,17 @@ public class MediaView extends Fragment{
 
     private final MediaBrowser.SubscriptionCallback mSubscriptionCallback = new MediaBrowser.SubscriptionCallback() {
             @Override
-            public void onChildrenLoaded(@NonNull String parentId,
-                                         @NonNull List<MediaBrowser.MediaItem> children) {
+            public void onChildrenLoaded(@NonNull String parentId, @NonNull List<MediaBrowser.MediaItem> children) {
                 try {
-                   Log.d(TAG, "fragment onChildrenLoaded, parentId=" + parentId + "  count=" + children.size());
+                    mProgressBar.setVisibility(View.INVISIBLE);
+                    mListItems = children;
+
+                    if (parentId != "/")
+                        mListItems.add(0, new MediaBrowser.MediaItem(new MediaDescription.Builder()
+                                .setMediaId(GET_BACK_ID)
+                                .setTitle("..")
+                                .build(), MediaBrowser.MediaItem.FLAG_BROWSABLE));
+
                     mMediaViewAdapter.clear();
                     mMediaViewAdapter.addAll(children);
                     mMediaViewAdapter.notifyDataSetChanged();
@@ -126,7 +149,10 @@ public class MediaView extends Fragment{
 
         // fetch browsing information to fill the listview:
         MediaBrowser mediaBrowser = mMainActivity.getMediaBrowser();
-
+        Bundle args = getArguments();
+        if (args != null) {
+            mMediaId =  args.getString(ARG_MEDIA_ID);
+        }
         Log.d(TAG, "fragment.onStart, mediaId=");
 
         if (mediaBrowser.isConnected()) {
