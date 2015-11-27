@@ -6,4 +6,12 @@
     <!-- Per the design guidelines, navigation drawers should be between 240dp and 320dp:
          https://developer.android.com/design/patterns/navigation-drawer.html -->
     <dimen name="navigation_drawer_width">240dp</dimen>
+
+
+    <!-- height of a normal list item in edit playlist mode -->
+    <dimen name="normal_height">50dip</dimen>
+    <!-- height of an expanded list item in edit playlist mode -->
+    <dimen name="expanded_height">100dip</dimen>
+
+
 </resources>

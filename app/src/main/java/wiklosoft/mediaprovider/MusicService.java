@@ -44,7 +44,7 @@ public class MusicService extends MediaBrowserService{
     private String ROOT_ID = "/";
 
     private MediaSession mSession;
-    private List<MediaSession.QueueItem> mPlayingQueue;
+    private List<MediaSession.QueueItem> mPlayingQueue = new ArrayList<>();
 
     private MediaPlayer mMediaPlayer;
     private String ADD_TO_FAVORITES_ACTION = "add_to_favorites_action";

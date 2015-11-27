@@ -21,8 +21,11 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -43,6 +46,7 @@ import wiklosoft.mediaprovider.providers.YoutubeProvider;
 public class MainActivity extends FragmentActivity implements NavigationDrawerFragment.NavigationDrawerCallbacks {
     private PlayerFragment mPlayerFragment = null;
     private MediaBrowser mMediaBrowser;
+    private PlaylistFragment mPlaylistFragment = null;
     private MusicProvider mProvider = null;
     private String TAG = "MainActivity";
     private MusicService mMusicService = null;
@@ -84,6 +88,27 @@ public class MainActivity extends FragmentActivity implements NavigationDrawerFr
         mPlayerFragment = new PlayerFragment();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.player, mPlayerFragment).commit();
+
+        View v = findViewById(R.id.player);
+        v.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mPlaylistFragment == null) {
+                    mPlaylistFragment = new PlaylistFragment();
+                    mPlaylistFragment.setMusicService(mMusicService);
+                }
+
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                transaction.setCustomAnimations(R.anim.abc_slide_in_bottom, R.anim.abc_slide_out_bottom);
+
+                if (mPlaylistFragment.isAdded()) {
+                    transaction.remove(mPlaylistFragment).addToBackStack("").commit();
+                    mPlaylistFragment = null;
+                }else {
+                    transaction.add(R.id.container, mPlaylistFragment).addToBackStack("").commit();
+                }
+            }
+        });
 
     }
     void setActionBarFont(){
