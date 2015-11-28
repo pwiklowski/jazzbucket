@@ -3,20 +3,22 @@
               android:orientation="horizontal"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:background="#ffffffff"
               android:gravity="bottom">
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:padding="10dp">
+        android:padding="10dp"
+        android:background="#96ffffff">
 
         <ImageView
             android:layout_width="25dp"
-            android:layout_height="30dp"
-            android:id="@+id/item_type"
-            android:layout_gravity="left"/>
+            android:layout_height="25dp"
+            android:id="@+id/dragger"
+            android:background="@drawable/lines"
+            android:backgroundTint="#33000000"
+            android:paddingTop="30dp"/>
 
         <TextView
             android:layout_width="0dp"
@@ -30,11 +32,6 @@
             android:paddingLeft="15dp"
             android:paddingTop="2dp"/>
 
-        <ImageView
-            android:layout_width="25dp"
-            android:layout_height="25dp"
-            android:id="@+id/imageView2"
-            android:background="@drawable/dots"/>
     </LinearLayout>
 
 </LinearLayout>

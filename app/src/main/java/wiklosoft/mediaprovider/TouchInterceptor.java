@@ -17,23 +17,22 @@
 package wiklosoft.mediaprovider;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LevelListDrawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.GestureDetector.SimpleOnGestureListener;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -66,53 +65,54 @@ public class TouchInterceptor extends ListView {
     private static final int FLING = 0;
     private static final int SLIDE = 1;
     private static final int TRASH = 2;
-    private int mRemoveMode = 1;
+    private int mRemoveMode = 2;
     private Rect mTempRect = new Rect();
     private Bitmap mDragBitmap;
     private final int mTouchSlop;
     private int mItemHeightNormal;
     private int mItemHeightExpanded;
     private int mItemHeightHalf;
-    private Drawable mTrashcan;
+    private View mTrashcan;
 
     public TouchInterceptor(Context context, AttributeSet attrs) {
         super(context, attrs);
-        SharedPreferences pref = context.getSharedPreferences("Music", 3);
-        mRemoveMode = pref.getInt("deletemode", -1);
         mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
         Resources res = getResources();
         mItemHeightNormal = res.getDimensionPixelSize(R.dimen.normal_height);
         mItemHeightHalf = mItemHeightNormal / 2;
         mItemHeightExpanded = res.getDimensionPixelSize(R.dimen.expanded_height);
+
+
     }
+
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        if (mRemoveListener != null && mGestureDetector == null) {
-            if (mRemoveMode == FLING) {
-                mGestureDetector = new GestureDetector(getContext(), new SimpleOnGestureListener() {
-                    @Override
-                    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
-                                           float velocityY) {
-                        if (mDragView != null) {
-                            if (velocityX > 1000) {
-                                Rect r = mTempRect;
-                                mDragView.getDrawingRect(r);
-                                if ( e2.getX() > r.right * 2 / 3) {
-                                    // fast fling right with release near the right edge of the screen
-                                    stopDragging();
-                                    mRemoveListener.remove(mSrcDragPos);
-                                    unExpandViews(true);
-                                }
-                            }
-                            // flinging while dragging should have no effect
-                            return true;
-                        }
-                        return false;
-                    }
-                });
-            }
-        }
+       // if (mRemoveListener != null && mGestureDetector == null) {
+       //     if (mRemoveMode == FLING) {
+       //         mGestureDetector = new GestureDetector(getContext(), new SimpleOnGestureListener() {
+       //             @Override
+       //             public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+       //                                    float velocityY) {
+       //                 if (mDragView != null) {
+       //                     if (velocityX > 1000) {
+       //                         Rect r = mTempRect;
+       //                         mDragView.getDrawingRect(r);
+       //                         if ( e2.getX() > r.right * 2 / 3) {
+       //                             // fast fling right with release near the right edge of the screen
+       //                             stopDragging();
+       //                             mRemoveListener.remove(mSrcDragPos);
+       //                             unExpandViews(true);
+       //                         }
+       //                     }
+       //                     // flinging while dragging should have no effect
+       //                     return true;
+       //                 }
+       //                 return false;
+       //             }
+       //         });
+       //     }
+       // }
         if (mDragListener != null || mDropListener != null) {
             switch (ev.getAction()) {
                 case MotionEvent.ACTION_DOWN:
@@ -128,7 +128,10 @@ public class TouchInterceptor extends ListView {
                     mXOffset = ((int)ev.getRawX()) - x;
                     mYOffset = ((int)ev.getRawY()) - y;
                     // The left side of the item is the grabber for dragging the item
-                    if (x < 364) {
+
+                    int width = item.getWidth();
+
+                    if (x < 200) {
                         item.setDrawingCacheEnabled(true);
                         // Create a copy of the drawing cache so that it does not get recycled
                         // by the framework when the list tries to clean up memory
@@ -293,7 +296,20 @@ public class TouchInterceptor extends ListView {
             vv.setVisibility(visibility);
         }
     }
+    private boolean isViewContains(View view, int rx, int ry) {
+        int[] l = new int[2];
+        view.getLocationOnScreen(l);
+        int x = l[0];
+        int y = l[1];
+        int w = view.getWidth();
+        int h = view.getHeight();
 
+        if (rx < x ) return false;
+        if ( rx > (x + w) ) return false;
+        if (ry < y ) return false;
+        if (ry > (y + h)) return false;
+        return true;
+    }
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
         if (mGestureDetector != null) {
@@ -307,24 +323,27 @@ public class TouchInterceptor extends ListView {
                     Rect r = mTempRect;
                     mDragView.getDrawingRect(r);
                     stopDragging();
-                    if (mRemoveMode == SLIDE && ev.getX() > r.right * 3 / 4) {
-                        if (mRemoveListener != null) {
+                    boolean deleted = false;
+                    if (mDropListener != null && mDragPos >= 0 && mDragPos < getCount()) {
+                        if (isViewContains(mTrashcan, Math.round(ev.getX()), Math.round(ev.getY()+mItemHeightNormal))) {
                             mRemoveListener.remove(mSrcDragPos);
-                        }
-                        unExpandViews(true);
-                    } else {
-                        if (mDropListener != null && mDragPos >= 0 && mDragPos < getCount()) {
+                            deleted = true;
+                        }else{
                             mDropListener.drop(mSrcDragPos, mDragPos);
                         }
-                        unExpandViews(false);
                     }
+                    unExpandViews(deleted);
                     break;
 
                 case MotionEvent.ACTION_DOWN:
                 case MotionEvent.ACTION_MOVE:
                     int x = (int) ev.getX();
                     int y = (int) ev.getY();
+
                     dragView(x, y);
+                    if (isViewContains(mTrashcan, Math.round(ev.getX()), Math.round(ev.getY()+mItemHeightNormal))) {
+                        break;
+                    }
                     int itemnum = getItemForPosition(y);
                     if (itemnum >= 0) {
                         if (action == MotionEvent.ACTION_DOWN || itemnum != mDragPos) {
@@ -367,6 +386,7 @@ public class TouchInterceptor extends ListView {
 
     private void startDragging(Bitmap bm, int x, int y) {
         stopDragging();
+        showTrashCan();
 
         mWindowParams = new WindowManager.LayoutParams();
         mWindowParams.gravity = Gravity.TOP | Gravity.LEFT;
@@ -387,7 +407,6 @@ public class TouchInterceptor extends ListView {
         ImageView v = new ImageView(context);
         //int backGroundColor = context.getResources().getColor(R.color.dragndrop_background);
         //v.setBackgroundColor(backGroundColor);
-        v.setBackgroundResource(R.drawable.abc_btn_check_to_on_mtrl_015);
         v.setPadding(0, 0, 0, 0);
         v.setImageBitmap(bm);
         mDragBitmap = bm;
@@ -398,14 +417,6 @@ public class TouchInterceptor extends ListView {
     }
 
     private void dragView(int x, int y) {
-        if (mRemoveMode == SLIDE) {
-            float alpha = 1.0f;
-            int width = mDragView.getWidth();
-            if (x > width / 2) {
-                alpha = ((float)(width - x)) / (width / 2);
-            }
-            mWindowParams.alpha = alpha;
-        }
 
         if (mRemoveMode == FLING || mRemoveMode == TRASH) {
             mWindowParams.x = x - mDragPointX + mXOffset;
@@ -414,17 +425,6 @@ public class TouchInterceptor extends ListView {
         }
         mWindowParams.y = y - mDragPointY + mYOffset;
         mWindowManager.updateViewLayout(mDragView, mWindowParams);
-
-        if (mTrashcan != null) {
-            int width = mDragView.getWidth();
-            if (y > getHeight() * 3 / 4) {
-                mTrashcan.setLevel(2);
-            } else if (width > 0 && x > width / 4) {
-                mTrashcan.setLevel(1);
-            } else {
-                mTrashcan.setLevel(0);
-            }
-        }
     }
 
     private void stopDragging() {
@@ -440,13 +440,21 @@ public class TouchInterceptor extends ListView {
             mDragBitmap = null;
         }
         if (mTrashcan != null) {
-            mTrashcan.setLevel(0);
+            hideTrashCan();
         }
     }
 
-    public void setTrashcan(Drawable trash) {
+    public void setTrashcan(View trash) {
         mTrashcan = trash;
         mRemoveMode = TRASH;
+    }
+
+    void showTrashCan(){
+        mTrashcan.animate().translationY(0).start();
+    }
+    void hideTrashCan(){
+        mTrashcan.animate().translationY(200).start();
+
     }
 
     public void setDragListener(DragListener l) {

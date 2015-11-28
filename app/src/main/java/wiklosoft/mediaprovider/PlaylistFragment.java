@@ -1,5 +1,6 @@
 package wiklosoft.mediaprovider;
 
+import android.graphics.drawable.Drawable;
 import android.media.MediaMetadata;
 import android.media.session.MediaController;
 import android.media.session.MediaSession;
@@ -38,7 +39,6 @@ public class PlaylistFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.playlist_fragment, container, false);
         mListView = (TouchInterceptor) rootView.findViewById(R.id.playlist_list);
-
         ((TouchInterceptor) mListView).setDropListener(mDropListener);
         ((TouchInterceptor) mListView).setRemoveListener(mRemoveListener);
 
@@ -46,16 +46,23 @@ public class PlaylistFragment extends Fragment {
 
         mListView.setAdapter(mPlaylistAdapter);
         mListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        mListView.setDivider(null);
+
+        mListView.setTrashcan(rootView.findViewById(R.id.trash_view));
 
         return rootView;
     }
     private TouchInterceptor.DropListener mDropListener =
             new TouchInterceptor.DropListener() {
                 public void drop(int from, int to) {
-                    int a= 5;
-
                     List<MediaSession.QueueItem> playlist = mService.getPlaylist();
-                    Collections.swap(playlist, from, to);
+
+                    //TODO its not a swap it
+                    MediaSession.QueueItem item = playlist.get(from);
+                    playlist.remove(from);
+                    playlist.add(to,item);
+
+
                     mPlaylistAdapter.notifyDataSetInvalidated();
                 }
             };
@@ -63,7 +70,7 @@ public class PlaylistFragment extends Fragment {
     private TouchInterceptor.RemoveListener mRemoveListener =
             new TouchInterceptor.RemoveListener() {
                 public void remove(int which) {
-                    int a= 5;
+                    mService.getPlaylist().remove(which);
                 }
             };
 

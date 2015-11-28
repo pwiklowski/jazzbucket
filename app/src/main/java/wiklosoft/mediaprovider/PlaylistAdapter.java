@@ -56,7 +56,7 @@ public class PlaylistAdapter extends ArrayAdapter<MediaSession.QueueItem> {
         title.setText(item.getDescription().getTitle());
 
         if (position == 5){
-            title.setTypeface(null, Typeface.BOLD);
+            //title.setTypeface(null, Typeface.BOLD);
         }
 
         return rowView;
