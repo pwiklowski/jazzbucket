@@ -2,11 +2,8 @@ package wiklosoft.mediaprovider.providers;
 
 import android.content.Context;
 import android.media.MediaDescription;
-import android.media.MediaMetadata;
-import android.media.MediaMetadataRetriever;
 import android.media.browse.MediaBrowser;
 import android.media.browse.MediaBrowser.MediaItem;
-import android.media.session.MediaSession;
 import android.os.Bundle;
 import android.service.media.MediaBrowserService;
 import android.support.v4.app.Fragment;
@@ -14,16 +11,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 import wiklosoft.mediaprovider.MetadataReady;
 import wiklosoft.mediaprovider.MusicReady;
 import wiklosoft.mediaprovider.QueueReady;
 import wiklosoft.mediaprovider.R;
+import wiklosoft.mediaprovider.playlists.Playlist;
 import wiklosoft.mediaprovider.playlists.PlaylistDatabaseHandler;
 
 /**
@@ -69,6 +64,9 @@ public class PlaylistsProvider implements MusicProvider {
         result.sendResult(list);
     }
 
+    Playlist getPlaylist(String name){
+        return mDb.getPlaylist(name);
+    }
 
 
 

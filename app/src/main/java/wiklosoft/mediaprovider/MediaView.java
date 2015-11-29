@@ -1,15 +1,11 @@
 package wiklosoft.mediaprovider;
 
-import android.app.Activity;
-import android.content.ComponentName;
-import android.content.IntentFilter;
 import android.media.MediaDescription;
 import android.media.MediaMetadata;
 import android.media.browse.MediaBrowser;
 import android.media.session.MediaController;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
-import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -21,12 +17,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import wiklosoft.mediaprovider.providers.MusicProvider;
 
 /**
  * Created by Pawel Wiklowski on 12.10.15.
@@ -74,14 +67,10 @@ public class MediaView extends Fragment{
                         transaction.replace(R.id.container, mv).addToBackStack("").commit();
                     }
                 }else if (item.isPlayable()){
+                    MediaSession.QueueItem queueItem= new MediaSession.QueueItem(item.getDescription(), 0);
+                    Queue q = MusicService.getService().getQueue();
 
-                    MediaController mc = getActivity().getMediaController();
-                    mc.getQueue().clear();
-                    for (int j=0; j<mListItems.size(); j++){
-                        mc.getQueue().add(new MediaSession.QueueItem(item.getDescription(), j));
-                    }
-
-                    mc.getTransportControls().playFromMediaId(item.getMediaId(), null);
+                    q.playItem(queueItem);
                 }
             }
         }

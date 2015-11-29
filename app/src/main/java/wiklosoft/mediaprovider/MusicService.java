@@ -44,7 +44,7 @@ public class MusicService extends MediaBrowserService{
     private String ROOT_ID = "/";
 
     private MediaSession mSession;
-    private List<MediaSession.QueueItem> mPlayingQueue = new ArrayList<>();
+    private Queue mPlayingQueue = null;
 
     private MediaPlayer mMediaPlayer;
     private String ADD_TO_FAVORITES_ACTION = "add_to_favorites_action";
@@ -64,8 +64,6 @@ public class MusicService extends MediaBrowserService{
         mMusicProviderList.add(new DibbleProvider(this));
         mMusicProviderList.add(new YoutubeProvider(this));
 
-        mPlayingQueue = new ArrayList<>();
-
         // Start a new MediaSession
         mSession = new MediaSession(this, "MusicService");
         setSessionToken(mSession.getSessionToken());
@@ -82,9 +80,10 @@ public class MusicService extends MediaBrowserService{
 
         mMediaPlayer = new MediaPlayer();
         mMusicService = this;
+        mPlayingQueue = new Queue(this, mSession.getController());
     }
 
-    List<MediaSession.QueueItem> getPlaylist(){
+    Queue getQueue(){
         return mPlayingQueue;
     }
 
@@ -98,7 +97,6 @@ public class MusicService extends MediaBrowserService{
 
     private final class MediaSessionCallback extends MediaSession.Callback {
         String mMediaId = "";
-        int mCurrentQueueId = 0;
 
         @Override
         public void onPlay() {
@@ -116,24 +114,14 @@ public class MusicService extends MediaBrowserService{
         public void onSeekTo(long position) {
             Log.d(TAG, "onSeekTo:"+ position);
         }
-        private int getPositionOnQueue(String mediaId, List<MediaSession.QueueItem> items){
 
-            for(int i=0;i<items.size();i++)
-            {
-                if (items.get(i).getDescription().getMediaId().equals(mediaId)){
-                    return i;
-                }
-            }
-
-            return 0;
-        }
 
         QueueReady mQueueReadyCallback = new QueueReady() {
             @Override
             public void ready(List<MediaSession.QueueItem> items) {
 
-                mPlayingQueue = items;
-                mCurrentQueueId = getPositionOnQueue(mMediaId, items);
+                mPlayingQueue.clear();
+                mPlayingQueue.addAll(items);
                 mSession.setQueue(items);
                 updatePlaybackState(mMediaId, mMediaPlayer.isPlaying() ? PlaybackState.STATE_PLAYING : PlaybackState.STATE_PAUSED);
             }
@@ -152,7 +140,7 @@ public class MusicService extends MediaBrowserService{
                         MusicProvider provider = getMusicProvider(providerId);
 
 
-                        provider.getQueue(mediaId, mQueueReadyCallback);
+                        //provider.getQueue(mediaId, mQueueReadyCallback);
 
                         try {
                             if (!provider.getMetaData(mediaId, mMetadataReady)) {
@@ -208,13 +196,7 @@ public class MusicService extends MediaBrowserService{
         public void onSkipToNext() {
             Log.d(TAG, "skipToNext");
             if (mPlayingQueue !=null && !mPlayingQueue.isEmpty()){
-
-                if (mCurrentQueueId + 1 == mPlayingQueue.size())
-                    mCurrentQueueId = 0;
-                else
-                    mCurrentQueueId++;
-
-                onPlayFromMediaId(mPlayingQueue.get(mCurrentQueueId).getDescription().getMediaId(), null);
+                mPlayingQueue.playNext();
             }
 
         }
@@ -223,11 +205,7 @@ public class MusicService extends MediaBrowserService{
         public void onSkipToPrevious() {
             Log.d(TAG, "skipToPrevious");
             if (mPlayingQueue !=null && !mPlayingQueue.isEmpty()){
-
-                if (mCurrentQueueId  != 0)
-                    mCurrentQueueId--;
-
-                onPlayFromMediaId(mPlayingQueue.get(mCurrentQueueId).getDescription().getMediaId(), null);
+                mPlayingQueue.playPrevious();
             }
         }
 

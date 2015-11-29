@@ -37,6 +37,8 @@ public class PlaylistDatabaseHandler extends SQLiteOpenHelper {
 
     public final static String KEY_ID = "id";
 
+    public final static String QUEUE_PLAYLIST_ID = "QUEUE_PLAYLIST_ID";
+
     @Override
     public void onCreate(SQLiteDatabase db) {
         String CREATE_TABLE = "CREATE TABLE " +TABLE_NAME+"("
@@ -80,7 +82,8 @@ public class PlaylistDatabaseHandler extends SQLiteOpenHelper {
 
         if (cursor.moveToFirst()) {
             do {
-                playlistsNames.add(cursor.getString(0));
+                if (!cursor.getString(0).equals(QUEUE_PLAYLIST_ID))
+                    playlistsNames.add(cursor.getString(0));
             } while (cursor.moveToNext());
         }
         return playlistsNames;

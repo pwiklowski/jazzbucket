@@ -1,8 +1,8 @@
 package wiklosoft.mediaprovider;
 
 
-import android.graphics.Typeface;
 import android.media.browse.MediaBrowser;
+import android.media.session.MediaSession;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
@@ -11,14 +11,11 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import wiklosoft.mediaprovider.playlists.Playlist;
 import wiklosoft.mediaprovider.playlists.PlaylistDatabaseHandler;
 
 /**
@@ -32,6 +29,9 @@ public class ItemMenuDialog extends DialogFragment {
         mMediaItem = item;
     }
 
+    private String ADD_TO_QUEUE_TOP = "Top of queue";
+    private String ADD_TO_QUEUE_BOTTOM = "Bottom of queue";
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -41,8 +41,10 @@ public class ItemMenuDialog extends DialogFragment {
 
 
         PlaylistDatabaseHandler db = new PlaylistDatabaseHandler(getActivity());
-        items = db.getPlaylistNames();
 
+        items.add(ADD_TO_QUEUE_TOP);
+        items.add(ADD_TO_QUEUE_BOTTOM);
+        items.addAll(db.getPlaylistNames());
 
         ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(getContext(), R.layout.media_imem_context_menu_item, items);
         menu_items.setAdapter(itemsAdapter);
@@ -50,8 +52,22 @@ public class ItemMenuDialog extends DialogFragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 String selectedItem = items.get(i);
+
                 PlaylistDatabaseHandler db = new PlaylistDatabaseHandler(getContext());
-                db.addItemToPlaylist(selectedItem, mMediaItem);
+                if (selectedItem.equals(ADD_TO_QUEUE_BOTTOM) || selectedItem.equals(ADD_TO_QUEUE_TOP)){
+                    Queue q = MusicService.getService().getQueue();
+                    if (selectedItem.equals(ADD_TO_QUEUE_BOTTOM))
+                        q.add(new MediaSession.QueueItem(mMediaItem.getDescription(), 0));
+                    else if (selectedItem.equals(ADD_TO_QUEUE_TOP)) {
+                        int position = q.getCurrentItemId() + 1;
+                        if (position <= 0)
+                            position = 0;
+
+                        q.add(position, new MediaSession.QueueItem(mMediaItem.getDescription(), 0));
+                    }
+                }else {
+                    db.addItemToPlaylist(selectedItem, mMediaItem);
+                }
                 dismiss();
             }
 
