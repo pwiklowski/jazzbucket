@@ -324,7 +324,7 @@ public class TouchInterceptor extends ListView {
                     mDragView.getDrawingRect(r);
                     stopDragging();
                     boolean deleted = false;
-                    if (mDropListener != null && mDragPos >= 0 && mDragPos < getCount()) {
+                    if (mDropListener != null && mDragPos >= 0 && mDragPos <= getCount()) {
                         if (isViewContains(mTrashcan, Math.round(ev.getX()), Math.round(ev.getY()+mItemHeightNormal))) {
                             mRemoveListener.remove(mSrcDragPos);
                             deleted = true;
