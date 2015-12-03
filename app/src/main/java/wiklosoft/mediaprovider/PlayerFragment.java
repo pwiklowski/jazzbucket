@@ -33,6 +33,8 @@ public class PlayerFragment extends Fragment {
     private Button mPlay = null;
     private TextView status = null;
     private ImageView mArt = null;
+    private OnPlaylistShow mOnPlaylistShow = null;
+    private ImageButton mShowPlaylist = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -56,6 +58,15 @@ public class PlayerFragment extends Fragment {
                     else if (state.getState() == PlaybackState.STATE_PLAYING)
                         getActivity().getMediaController().getTransportControls().pause();
                 }
+            }
+        });
+
+        mShowPlaylist = (ImageButton) rootView.findViewById(R.id.show_playlist);
+        mShowPlaylist.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mOnPlaylistShow != null)
+                    mOnPlaylistShow.onShow(true);
             }
         });
 
@@ -86,6 +97,14 @@ public class PlayerFragment extends Fragment {
         if (mArtist != null) mArtist.setText(metadata.getText(MediaMetadata.METADATA_KEY_ARTIST));
         if (mTitle != null) mTitle.setText(metadata.getText(MediaMetadata.METADATA_KEY_TITLE));
         if (mArt != null) mArt.setImageBitmap(metadata.getBitmap(MediaMetadata.METADATA_KEY_ART));
+    }
+
+    public void setOnPlaylistShowListener(OnPlaylistShow listener){
+        mOnPlaylistShow = listener;
+    }
+
+    public interface OnPlaylistShow {
+        void onShow(boolean show);
     }
 
 }

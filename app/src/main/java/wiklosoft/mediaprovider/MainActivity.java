@@ -43,7 +43,7 @@ import wiklosoft.mediaprovider.providers.SoundCloudProvider;
 import wiklosoft.mediaprovider.providers.YoutubeProvider;
 
 
-public class MainActivity extends FragmentActivity implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+public class MainActivity extends FragmentActivity implements NavigationDrawerFragment.NavigationDrawerCallbacks, PlayerFragment.OnPlaylistShow {
     private PlayerFragment mPlayerFragment = null;
     private MediaBrowser mMediaBrowser;
     private PlaylistFragment mPlaylistFragment = null;
@@ -89,26 +89,10 @@ public class MainActivity extends FragmentActivity implements NavigationDrawerFr
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.player, mPlayerFragment).commit();
 
-        View v = findViewById(R.id.player);
-        v.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mPlaylistFragment == null) {
-                    mPlaylistFragment = new PlaylistFragment();
-                    mPlaylistFragment.setMusicService(mMusicService);
-                }
 
-                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                transaction.setCustomAnimations(R.anim.abc_slide_in_bottom, R.anim.abc_slide_out_bottom);
+        mPlayerFragment.setOnPlaylistShowListener(this);
 
-                if (mPlaylistFragment.isAdded()) {
-                    transaction.remove(mPlaylistFragment).addToBackStack("").commit();
-                    mPlaylistFragment = null;
-                }else {
-                    transaction.add(R.id.container, mPlaylistFragment).addToBackStack("").commit();
-                }
-            }
-        });
+
 
     }
     void setActionBarFont(){
@@ -244,4 +228,22 @@ public class MainActivity extends FragmentActivity implements NavigationDrawerFr
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onShow(boolean show) {
+        if (mPlaylistFragment == null) {
+            mPlaylistFragment = new PlaylistFragment();
+            mPlaylistFragment.setMusicService(mMusicService);
+        }
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(R.anim.abc_slide_in_bottom, R.anim.abc_slide_out_bottom);
+
+        if (mPlaylistFragment.isAdded()) {
+            //transaction.remove(mPlaylistFragment)..commit();
+            getSupportFragmentManager().popBackStack();
+            mPlaylistFragment = null;
+        } else {
+            transaction.add(R.id.container, mPlaylistFragment).addToBackStack("").commit();
+        }
+    }
 }
