@@ -72,7 +72,7 @@ public class TouchInterceptor extends ListView {
     private int mItemHeightNormal;
     private int mItemHeightExpanded;
     private int mItemHeightHalf;
-    private View mTrashcan;
+    private ImageView mTrashcan;
 
     public TouchInterceptor(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -342,7 +342,9 @@ public class TouchInterceptor extends ListView {
 
                     dragView(x, y);
                     if (isViewContains(mTrashcan, Math.round(ev.getX()), Math.round(ev.getY()+mItemHeightNormal))) {
-                        break;
+                        mTrashcan.setBackgroundResource(R.drawable.trash_red);
+                    }else {
+                        mTrashcan.setBackgroundResource(R.drawable.trash_blue);
                     }
                     int itemnum = getItemForPosition(y);
                     if (itemnum >= 0) {
@@ -444,7 +446,7 @@ public class TouchInterceptor extends ListView {
         }
     }
 
-    public void setTrashcan(View trash) {
+    public void setTrashcan(ImageView trash) {
         mTrashcan = trash;
         mRemoveMode = TRASH;
     }

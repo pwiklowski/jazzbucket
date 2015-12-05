@@ -15,7 +15,7 @@
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:id="@+id/trash_view"
-        android:background="@drawable/trash"
+        android:background="@drawable/trash_blue"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="40dp"/>

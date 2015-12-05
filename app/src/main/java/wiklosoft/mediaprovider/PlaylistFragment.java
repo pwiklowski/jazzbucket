@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -35,7 +36,7 @@ public class PlaylistFragment extends Fragment {
 
         mListView.setAdapter(mPlaylistAdapter);
         mListView.setDivider(null);
-        mListView.setTrashcan(rootView.findViewById(R.id.trash_view));
+        mListView.setTrashcan((ImageView) rootView.findViewById(R.id.trash_view));
 
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
