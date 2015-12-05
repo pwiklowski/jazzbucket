@@ -20,10 +20,7 @@ import android.widget.TextView;
  */
 public class PlayerFragment extends Fragment {
     private final String TAG = "PlayerFragment";
-    private TextView mTitle = null;
-    private TextView mArtist = null;
     private ImageButton mPlay = null;
-    private TextView status = null;
     private ImageView mArt = null;
     private OnPlaylistShow mOnPlaylistShow = null;
     private ImageButton mShowPlaylist = null;
@@ -32,9 +29,6 @@ public class PlayerFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.player_view, container, false);
 
-        mTitle = (TextView) rootView.findViewById(R.id.title);
-        mArtist = (TextView) rootView.findViewById(R.id.artist);
-        status = (TextView) rootView.findViewById(R.id.status);
         mPlay = (ImageButton) rootView.findViewById(R.id.play);
         mArt = (ImageView) rootView.findViewById(R.id.art);
 
@@ -69,26 +63,30 @@ public class PlayerFragment extends Fragment {
     public void onPlaybackStateChanged(@NonNull PlaybackState state) {
         Log.d(TAG, "mediaControllerCallback.onPlaybackStateChanged: " + state.getState());
         if(state.getState() == PlaybackState.STATE_PAUSED)
-            status.setText("PAUSED");
+            mPlay.setImageResource(R.drawable.play);
 
         if(state.getState() == PlaybackState.STATE_PLAYING)
-            status.setText("PLAYING");
+            mPlay.setImageResource(R.drawable.pause);
 
-        if(state.getState() == PlaybackState.STATE_BUFFERING)
-            status.setText("BUFFERING");
-        if(state.getState() == PlaybackState.STATE_CONNECTING){
+        //if(state.getState() == PlaybackState.STATE_BUFFERING)
+        //    setTitle("Buffering...");
+        //if(state.getState() == PlaybackState.STATE_CONNECTING)
+        //    setTitle("Connecting...");
 
-            status.setText("CONNECTING");
-            mArtist.setText("");
-            mTitle.setText("Connecting...");
+    }
 
-        }
+    private void setTitle(String title){
+        int titleId = getResources().getIdentifier("action_bar_title", "id", "android");
+        TextView yourTextView = (TextView) getActivity().findViewById(titleId);
+        yourTextView.setText(title);
     }
 
     public void onMetadataChanged(MediaMetadata metadata) {
-        if (mArtist != null) mArtist.setText(metadata.getText(MediaMetadata.METADATA_KEY_ARTIST));
-        if (mTitle != null) mTitle.setText(metadata.getText(MediaMetadata.METADATA_KEY_TITLE));
+        String artist = metadata.getText(MediaMetadata.METADATA_KEY_ARTIST).toString();
+        String title = metadata.getText(MediaMetadata.METADATA_KEY_TITLE).toString();
         if (mArt != null) mArt.setImageBitmap(metadata.getBitmap(MediaMetadata.METADATA_KEY_ART));
+
+        setTitle(artist + " " + title);
     }
 
     public void setOnPlaylistShowListener(OnPlaylistShow listener){

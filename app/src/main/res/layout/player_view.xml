@@ -2,91 +2,65 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical"
               android:layout_width="match_parent"
-              android:layout_height="70dp"
-              android:background="@color/blueish">
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="fill_parent"
-        android:layout_gravity="center_vertical"
-        android:weightSum="1">
-
-        <ImageView
-            android:layout_width="70dp"
-            android:layout_height="match_parent"
-            android:id="@+id/art"/>
-
-        <ImageButton
-            android:layout_width="60dp"
-            android:layout_height="70dp"
-            android:id="@+id/previous"
-            android:src="@drawable/previous"
-            android:scaleType="fitCenter"
-            android:padding="15dp"/>
-
-        <ImageButton
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="60dp"
-            android:layout_height="match_parent"
-            android:text="Play"
-            android:id="@+id/play"
-            android:src="@drawable/play"/>
-
-        <ImageButton
-            android:layout_width="60dp"
-            android:layout_height="70dp"
-            android:id="@+id/next"
-            android:src="@drawable/next"
-            android:padding="15dp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:id="@+id/artist"
-            android:fontFamily="sans-serif"
-            android:layout_marginRight="5dp"
-            android:textColor="#ffffffff"
-            />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:id="@+id/title"
-            android:fontFamily="sans-serif-light"
-            android:textColor="#ffffffff"
-            android:textIsSelectable="false"/>
-
-        <TextView
-            android:layout_width="37dp"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="Small Text"
-            android:id="@+id/status"
-            android:gravity="right"/>
-
-    </LinearLayout>
+              android:layout_height="wrap_content"
+                android:background="@color/blueish">
 
     <ImageButton
         android:layout_width="70dp"
         android:layout_height="60dp"
         android:id="@+id/show_playlist"
-        android:background="@drawable/playlist"
-        android:paddingTop="20dp"
-        android:padding="20dp"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_margin="5dp"/>
+        android:layout_margin="5dp"
+        android:src="@drawable/playlist"
+        android:scaleType="fitCenter"
+        android:background="@null"
+        android:padding="10dp"/>
+
+    <ImageView
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:id="@+id/art"
+        android:layout_alignParentStart="true"/>
+
+    <ImageButton
+        android:layout_width="50dp"
+        android:layout_height="70dp"
+        android:id="@+id/previous"
+        android:src="@drawable/previous"
+        android:scaleType="center"
+        android:padding="15dp"
+        android:background="@null"
+        android:layout_alignParentTop="true"
+        android:layout_toStartOf="@+id/play"/>
+
+    <ImageButton
+        android:layout_width="50dp"
+        android:layout_height="70dp"
+        android:id="@+id/next"
+        android:src="@drawable/next"
+        android:padding="15dp"
+        android:background="@null"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/play"/>
 
     <ImageView
         android:layout_width="100dp"
         android:layout_height="3dp"
         android:id="@+id/imageView2"
         android:background="#ffff6e00"/>
+
+    <ImageButton
+        android:layout_width="100dp"
+        android:layout_height="70dp"
+        android:text="Play"
+        android:id="@+id/play"
+        android:src="@drawable/play"
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="false"
+        android:background="@null"
+        android:layout_gravity="center_horizontal"
+        android:layout_centerHorizontal="true"/>
 
 </RelativeLayout>
