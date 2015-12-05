@@ -29,7 +29,7 @@ public class PlaylistFragment extends Fragment {
         mListView.setDropListener(mDropListener);
         mListView.setRemoveListener(mRemoveListener);
 
-        mPlaylistAdapter = new PlaylistAdapter(getActivity(), mService.getQueue());
+        mPlaylistAdapter = new PlaylistAdapter(getActivity(), mService.getQueue().getItems());
 
         mListView.setAdapter(mPlaylistAdapter);
         mListView.setDivider(null);
@@ -49,11 +49,10 @@ public class PlaylistFragment extends Fragment {
     private TouchInterceptor.DropListener mDropListener =
             new TouchInterceptor.DropListener() {
                 public void drop(int from, int to) {
-                    List<MediaSession.QueueItem> playlist = mService.getQueue();
-                    MediaSession.QueueItem item = playlist.get(from);
-                    playlist.remove(from);
-                    playlist.add(to,item);
-                    mPlaylistAdapter.notifyDataSetInvalidated();
+                    if (from != to){
+                        mService.getQueue().move(from, to);
+                        mPlaylistAdapter.notifyDataSetInvalidated();
+                    }
                 }
             };
 

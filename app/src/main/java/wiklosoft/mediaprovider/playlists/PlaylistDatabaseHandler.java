@@ -11,6 +11,7 @@ import android.media.browse.MediaBrowser;
 import android.media.browse.MediaBrowser.MediaItem;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,53 +90,51 @@ public class PlaylistDatabaseHandler extends SQLiteOpenHelper {
         return playlistsNames;
     }
     public void addItemToPlaylist(String playlistName, MediaItem item) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
         MediaDescription description = item.getDescription();
-        Bundle extra = description.getExtras();
-
-        int id = getItemId(playlistName);
-
-
-        ContentValues values = new ContentValues();
-        values.put(TITLE, description.getTitle().toString());
-        values.put(ITEM_ID, id);
-        values.put(MEDIA_ID, description.getMediaId());
-        values.put(NAME, playlistName);
-
-        // Inserting Row
-        db.insert(TABLE_NAME, null, values);
-
-        db.close(); // Closing database connection
+        addItemToPlaylist(playlistName, description.getTitle().toString(), description.getMediaId());
     }
     public void addItemToPlaylist(String playlistName, String title, String mediaId) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
         int id = getItemId(playlistName);
+        addItemToPlaylist(playlistName, title, mediaId, id);
+
+    }
+    public void addItemToPlaylist(String playlistName, String title, String mediaId, int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(TITLE, title);
         values.put(ITEM_ID, id);
-        values.put(MEDIA_ID, mediaId);
+        values.put(MEDIA_ID, mediaId.replace("'", "''"));
         values.put(NAME, playlistName);
 
         // Inserting Row
         db.insert(TABLE_NAME, null, values);
-
         db.close(); // Closing database connection
     }
-    public void removeItemFromPlaylist(String playlistName, String mediaId){
 
+    public void addItemToPlaylist(int i, String playlistName, String title, String mediaId) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_NAME, NAME + "='" + playlistName + "' AND " + MEDIA_ID + "='" + TextUtils.htmlEncode(mediaId) + "'", null);
+
+        String query = "UPDATE " + TABLE_NAME + " SET " + ITEM_ID + "=("+ITEM_ID+" + 1) WHERE " +ITEM_ID + " >= " +i;
+
+        db.execSQL(query);
         db.close();
+        addItemToPlaylist(playlistName, title, mediaId, i);
 
 
+        getPlaylist(playlistName);
+    }
+
+    public void removeItemFromPlaylist(String playlistName, String mediaId){
+        String query = "DELETE FROM "+ TABLE_NAME + " WHERE "+  NAME + "='" + playlistName + "' AND " + MEDIA_ID + "='" + mediaId.replace("'", "''") + "'";
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL(query);
+        db.close();
     }
     private int getItemId(String playlistName){
         int lastItem = -1;
 
-        String selectQuery = "SELECT "+ ITEM_ID +" FROM " + TABLE_NAME + " WHERE " + NAME + "='" +playlistName +"' ORDER BY " + NAME + " DESC";
+        String selectQuery = "SELECT "+ ITEM_ID +" FROM " + TABLE_NAME + " WHERE " + NAME + "='" +playlistName +"' ORDER BY " + ITEM_ID + " DESC";
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -153,13 +152,15 @@ public class PlaylistDatabaseHandler extends SQLiteOpenHelper {
     {
         Playlist playlist = new Playlist(name);
 
-        String selectQuery = "SELECT "+TITLE+","+MEDIA_ID+" FROM " + TABLE_NAME + " WHERE " + NAME + "='" + name + "'";
+        String selectQuery = "SELECT "+TITLE+","+MEDIA_ID+"," + ITEM_ID +" FROM " + TABLE_NAME + " WHERE " + NAME + "='" + name + "' ORDER BY "+ ITEM_ID + " ASC";
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
 
         if (cursor.moveToFirst()) {
             do {
+                Log.d("DB", cursor.getInt(2) + " " + cursor.getString(0) + " " + cursor.getString(1));
+
                 MediaBrowser.MediaItem item = new MediaBrowser.MediaItem(new MediaDescription.Builder()
                         .setMediaId(cursor.getString(cursor.getColumnIndex(MEDIA_ID)))
                         .setTitle(cursor.getString(cursor.getColumnIndex(TITLE)))

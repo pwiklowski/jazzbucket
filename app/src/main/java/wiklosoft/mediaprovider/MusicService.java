@@ -71,7 +71,7 @@ public class MusicService extends MediaBrowserService{
         mSession.setFlags(MediaSession.FLAG_HANDLES_MEDIA_BUTTONS |
                 MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS);
 
-        mSession.setQueue(mPlayingQueue);
+        //mSession.setQueue(mPlayingQueue);
         Context context = getApplicationContext();
         Intent intent = new Intent(context, MainActivity.class);
         PendingIntent pi = PendingIntent.getActivity(context, 99 /*request code*/,
@@ -120,8 +120,8 @@ public class MusicService extends MediaBrowserService{
             @Override
             public void ready(List<MediaSession.QueueItem> items) {
 
-                mPlayingQueue.clear();
-                mPlayingQueue.addAll(items);
+                //mPlayingQueue.clear();
+                //mPlayingQueue.addAll(items);
                 mSession.setQueue(items);
                 updatePlaybackState(mMediaId, mMediaPlayer.isPlaying() ? PlaybackState.STATE_PLAYING : PlaybackState.STATE_PAUSED);
             }
@@ -195,7 +195,7 @@ public class MusicService extends MediaBrowserService{
         @Override
         public void onSkipToNext() {
             Log.d(TAG, "skipToNext");
-            if (mPlayingQueue !=null && !mPlayingQueue.isEmpty()){
+            if (mPlayingQueue !=null){
                 mPlayingQueue.playNext();
             }
 
@@ -204,7 +204,7 @@ public class MusicService extends MediaBrowserService{
         @Override
         public void onSkipToPrevious() {
             Log.d(TAG, "skipToPrevious");
-            if (mPlayingQueue !=null && !mPlayingQueue.isEmpty()){
+            if (mPlayingQueue !=null){
                 mPlayingQueue.playPrevious();
             }
         }
