@@ -56,7 +56,7 @@ public class PlaylistFragment extends Fragment {
     private TouchInterceptor.DropListener mDropListener =
             new TouchInterceptor.DropListener() {
                 public void drop(int from, int to) {
-                    if (from != to){
+                    if (from != to && to < mService.getQueue().getItems().size()){
                         mService.getQueue().move(from, to);
                         mPlaylistAdapter.notifyDataSetInvalidated();
                     }
