@@ -236,7 +236,8 @@ public class MainActivity extends FragmentActivity implements NavigationDrawerFr
         }
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.setCustomAnimations(R.anim.abc_slide_in_bottom, R.anim.abc_slide_out_bottom);
+        transaction.setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
+                R.anim.slide_in_bottom, R.anim.slide_out_bottom);
 
         if (mPlaylistFragment.isAdded()) {
             //transaction.remove(mPlaylistFragment)..commit();
