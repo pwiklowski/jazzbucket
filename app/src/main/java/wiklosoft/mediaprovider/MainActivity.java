@@ -25,6 +25,8 @@ import android.view.DragEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -92,8 +94,11 @@ public class MainActivity extends FragmentActivity implements NavigationDrawerFr
 
         mPlayerFragment.setOnPlaylistShowListener(this);
 
-
-
+        Window window = getWindow();
+        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.setStatusBarColor(getResources().getColor(R.color.blueish_dark));
+        window.setNavigationBarColor(getResources().getColor(R.color.blueish_dark));
     }
     void setActionBarFont(){
         int titleId = getResources().getIdentifier("action_bar_title", "id", "android");
