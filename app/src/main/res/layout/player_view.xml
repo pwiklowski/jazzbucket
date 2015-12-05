@@ -1,27 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical"
               android:layout_width="match_parent"
-              android:layout_height="80dp"
+              android:layout_height="70dp"
               android:background="@color/blueish">
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
-        android:layout_gravity="center_vertical">
+        android:layout_gravity="center_vertical"
+        android:weightSum="1">
 
         <ImageView
-            android:layout_width="80dp"
+            android:layout_width="70dp"
             android:layout_height="match_parent"
             android:id="@+id/art"/>
 
-        <Button
+        <ImageButton
+            android:layout_width="60dp"
+            android:layout_height="70dp"
+            android:id="@+id/previous"
+            android:src="@drawable/previous"
+            android:scaleType="fitCenter"
+            android:padding="15dp"/>
+
+        <ImageButton
             style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
+            android:layout_width="60dp"
             android:layout_height="match_parent"
             android:text="Play"
-            android:id="@+id/play"/>
+            android:id="@+id/play"
+            android:src="@drawable/play"/>
+
+        <ImageButton
+            android:layout_width="60dp"
+            android:layout_height="70dp"
+            android:id="@+id/next"
+            android:src="@drawable/next"
+            android:padding="15dp"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -43,12 +60,11 @@
             android:textIsSelectable="false"/>
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="37dp"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:text="Small Text"
             android:id="@+id/status"
-            android:layout_weight="2"
             android:gravity="right"/>
 
     </LinearLayout>
@@ -66,3 +82,11 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_margin="5dp"/>
+
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="3dp"
+        android:id="@+id/imageView2"
+        android:background="#ffff6e00"/>
+
+</RelativeLayout>

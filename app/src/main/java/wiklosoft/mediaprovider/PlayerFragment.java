@@ -1,27 +1,19 @@
 package wiklosoft.mediaprovider;
 
 import android.media.MediaMetadata;
-import android.media.browse.MediaBrowser;
 import android.media.session.MediaController;
 import android.media.session.PlaybackState;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
-
-import org.w3c.dom.Text;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Pawel Wiklowski on 12.10.15.
@@ -30,7 +22,7 @@ public class PlayerFragment extends Fragment {
     private final String TAG = "PlayerFragment";
     private TextView mTitle = null;
     private TextView mArtist = null;
-    private Button mPlay = null;
+    private ImageButton mPlay = null;
     private TextView status = null;
     private ImageView mArt = null;
     private OnPlaylistShow mOnPlaylistShow = null;
@@ -43,7 +35,7 @@ public class PlayerFragment extends Fragment {
         mTitle = (TextView) rootView.findViewById(R.id.title);
         mArtist = (TextView) rootView.findViewById(R.id.artist);
         status = (TextView) rootView.findViewById(R.id.status);
-        mPlay = (Button) rootView.findViewById(R.id.play);
+        mPlay = (ImageButton) rootView.findViewById(R.id.play);
         mArt = (ImageView) rootView.findViewById(R.id.art);
 
         mPlay.setOnClickListener(new View.OnClickListener() {
