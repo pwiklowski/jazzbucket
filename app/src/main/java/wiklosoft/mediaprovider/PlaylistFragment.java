@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.TextView;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class PlaylistFragment extends Fragment {
     MusicService mService = null;
     TouchInterceptor mListView = null;
     PlaylistAdapter mPlaylistAdapter = null;
+    TextView mEmptyQueueText = null;
 
     public void setMusicService(MusicService service){
         mService = service;
@@ -42,7 +44,12 @@ public class PlaylistFragment extends Fragment {
                 mPlaylistAdapter.notifyDataSetInvalidated();
             }
         });
+        mEmptyQueueText = (TextView) rootView.findViewById(R.id.empty_queue_notifier);
 
+        if (mService.getQueue().getItems().size() > 0){
+            mEmptyQueueText.setVisibility(View.GONE);
+
+        }
 
         return rootView;
     }
@@ -60,6 +67,12 @@ public class PlaylistFragment extends Fragment {
             new TouchInterceptor.RemoveListener() {
                 public void remove(int which) {
                     mService.getQueue().remove(which);
+                    if (mService.getQueue().getItems().size() > 0){
+                        mEmptyQueueText.setVisibility(View.GONE);
+                    }else{
+                        mEmptyQueueText.setVisibility(View.VISIBLE);
+                    }
+
                 }
             };
 
