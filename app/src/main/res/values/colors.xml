@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="blueish" type="color">#FF00baff</item>
+    <item name="blueish_dark" type="color">#ff00a3e3</item>
     <item name="white" type="color">#FFFFFFFF</item>
 </resources>
