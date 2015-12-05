@@ -50,7 +50,7 @@ public class PlaylistFragment extends Fragment {
             mEmptyQueueText.setVisibility(View.GONE);
 
         }
-
+        mListView.hideTrashCan();
         return rootView;
     }
     private TouchInterceptor.DropListener mDropListener =

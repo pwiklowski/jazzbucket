@@ -453,7 +453,7 @@ public class TouchInterceptor extends ListView {
         mTrashcan.animate().translationY(0).start();
     }
     void hideTrashCan(){
-        mTrashcan.animate().translationY(200).start();
+        mTrashcan.animate().translationY(300).start();
 
     }
 
