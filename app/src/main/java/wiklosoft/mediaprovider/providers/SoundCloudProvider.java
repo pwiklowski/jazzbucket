@@ -60,6 +60,8 @@ public class SoundCloudProvider extends OAuthProvider {
         CLIENT_SECRET = "b84e8b162585031dbdd7f927397ffaae";
 
         mContext = context;
+
+        mIcon = R.mipmap.soundcloud;
         getAccountInfo();
     }
 
@@ -547,10 +549,5 @@ public class SoundCloudProvider extends OAuthProvider {
 
     public static class SettingsFragment extends BaseSettingsFragment {
 
-        @Override
-        public void init(){
-            mLogo = R.mipmap.soundcloud;
-            super.init();
-        }
     }
 }

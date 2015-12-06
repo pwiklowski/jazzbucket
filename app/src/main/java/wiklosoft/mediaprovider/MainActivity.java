@@ -151,22 +151,9 @@ public class MainActivity extends FragmentActivity implements NavigationDrawerFr
         @Override
         public void onServiceConnected(ComponentName name, IBinder binder) {
             Log.d(TAG, "onServiceConnected");
-
             mMusicService = MusicService.getService();
             mMusicProviderList = mMusicService.getMusicProviders();
-
-
-
-
-            String[] names = new String[mMusicProviderList.size()+1];
-            for(int i=0; i<mMusicProviderList.size();i++)
-                names[i] =mMusicProviderList.get(i).getName();
-
-            names[mMusicProviderList.size()] = "Settings";
-
-            mNavigationDrawerFragment.setItems(names);
-
-
+            mNavigationDrawerFragment.setItems(mMusicProviderList);
         }
 
         @Override
@@ -180,9 +167,8 @@ public class MainActivity extends FragmentActivity implements NavigationDrawerFr
     public void onNavigationDrawerItemSelected(int position) {
         Log.d(TAG,"onNavigationDrawerItemSelected "+ position);
 
-        if (position < mMusicProviderList.size()) {
+        if (position != NavigationDrawerFragment.SETTINGS_ID) {
             MusicProvider mp = mMusicProviderList.get(position);
-            mTitle = mp.getName();
 
             MediaView mv = new MediaView();
             mv.setMediaId(mp.getId());
@@ -191,7 +177,6 @@ public class MainActivity extends FragmentActivity implements NavigationDrawerFr
             transaction.replace(R.id.container, mv).addToBackStack("").commit();
 
         }else {
-            mTitle = "Settings";
             getSupportFragmentManager().beginTransaction().replace(R.id.container, new SettingsFragment()).addToBackStack("").commit();
         }
     }

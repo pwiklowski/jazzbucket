@@ -43,6 +43,11 @@ public class PlaylistsProvider implements MusicProvider {
     }
 
     @Override
+    public int getIcon() {
+        return 0;
+    }
+
+    @Override
     public void getChildren(String s, MediaBrowserService.Result<List<MediaItem>> result){
         List<MediaItem> list = new ArrayList<>();
 

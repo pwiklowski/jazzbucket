@@ -18,6 +18,7 @@ import wiklosoft.mediaprovider.QueueReady;
 public interface MusicProvider {
     String getName();
     String getId();
+    int getIcon();
     void getChildren(String s, MediaBrowserService.Result<List<MediaBrowser.MediaItem>> result);
     void getMediaUrl(String id, MusicReady callback);
     boolean getMetaData(String id, MetadataReady callback);

@@ -65,6 +65,7 @@ public class YoutubeProvider extends OAuthProvider {
         CLIENT_SECRET = "OCOC95FB_Sha140EhSj2fMYJ";
 
         mContext = context;
+        mIcon = R.mipmap.youtube;
 
         getChannels();
 
@@ -427,13 +428,5 @@ public class YoutubeProvider extends OAuthProvider {
     }
 
     public static class SettingsFragment extends BaseSettingsFragment {
-
-
-
-        @Override
-        public void init(){
-            mLogo = R.mipmap.youtube;
-            super.init();
-        }
     }
 }

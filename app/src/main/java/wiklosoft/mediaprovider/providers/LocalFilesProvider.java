@@ -43,12 +43,17 @@ public class LocalFilesProvider implements MusicProvider {
 
     @Override
     public String getName() {
-        return "Local Music Provider";
+        return "Local Music";
     }
 
     @Override
     public String getId() {
         return mId;
+    }
+
+    @Override
+    public int getIcon() {
+        return 0;
     }
 
     @Override

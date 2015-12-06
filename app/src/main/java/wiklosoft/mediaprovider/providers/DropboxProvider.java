@@ -44,6 +44,8 @@ public class DropboxProvider extends OAuthProvider {
         TOKEN_URL = "https://api.dropbox.com/1/oauth2/token";
         CLIENT_ID = "bvyu7eknqot0rkl";
         CLIENT_SECRET = "u4an3qd7gkkmjo9";
+
+        mIcon = R.mipmap.dropbox;
     }
 
     @Override
@@ -208,8 +210,6 @@ public class DropboxProvider extends OAuthProvider {
 
         @Override
         public void init(){
-            mLogo = R.mipmap.dropbox;
-
             super.init();
         }
     }

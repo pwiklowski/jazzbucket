@@ -1,9 +1,53 @@
-<ListView xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:choiceMode="singleChoice"
-          android:divider="@android:color/transparent"
-          android:dividerHeight="1dp"
-          android:background="#ffff"
-          tools:context=".NavigationDrawerFragment"/>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+                android:background="#ffffffff">
+
+    <ListView android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:choiceMode="singleChoice"
+              android:divider="#00cacaca"
+              android:dividerHeight="1dp"
+              tools:context=".NavigationDrawerFragment"
+              android:background="#ffffffff"
+              android:id="@+id/navigation_menu"
+              android:layout_above="@+id/settings_menu"/>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:orientation="horizontal"
+                  android:layout_height="50dp"
+                  android:padding="1dp"
+                  android:gravity="bottom"
+                  android:layout_width="fill_parent"
+                  android:layout_alignParentBottom="true"
+                  android:id="@+id/settings_menu">
+
+
+        <ImageView
+            android:layout_width="55dp"
+            android:layout_height="48dp"
+            android:id="@+id/icon"
+            android:layout_gravity="top"
+            android:src="@mipmap/settings"
+            android:scaleType="fitCenter"
+            android:padding="10dp"
+            android:tint="#ff0f749b"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="Settings"
+            android:fontFamily="sans-serif-light"
+            android:id="@+id/title"
+            android:textAllCaps="true"
+            android:paddingLeft="15dp"
+            android:textColor="#ff000000"
+            android:autoText="false"
+            android:layout_gravity="left|center_vertical"
+            />
+
+
+    </LinearLayout>
+</RelativeLayout>
+

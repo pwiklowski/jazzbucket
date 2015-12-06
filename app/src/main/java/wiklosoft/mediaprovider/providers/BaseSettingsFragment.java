@@ -29,7 +29,8 @@ public class BaseSettingsFragment extends Fragment {
     }
 
     public void init(){
-
+        if (mProvider != null)
+            mLogo = mProvider.getIcon();
     }
 
     public void setProvider(OAuthProvider provider){

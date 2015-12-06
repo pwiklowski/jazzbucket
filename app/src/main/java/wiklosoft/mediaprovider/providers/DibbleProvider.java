@@ -67,6 +67,11 @@ public class DibbleProvider implements MusicProvider {
     }
 
     @Override
+    public int getIcon() {
+        return R.mipmap.dribbble;
+    }
+
+    @Override
     public void getChildren(String s, MediaBrowserService.Result<List<MediaItem>> result){
         s = s.replace(mId, "");
         if(s.startsWith("/")) s = s.substring(1);

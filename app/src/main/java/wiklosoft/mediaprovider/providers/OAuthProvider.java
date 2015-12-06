@@ -28,6 +28,7 @@ public class OAuthProvider implements MusicProvider {
     private String ACCESS = "ACCESS_";
     protected String ID = null;
     protected Context mContext;
+    protected int mIcon = 0;
 
 
     private Date mTokenExpiration = new Date();
@@ -140,6 +141,11 @@ public class OAuthProvider implements MusicProvider {
     @Override
     public String getId() {
         return ID;
+    }
+
+    @Override
+    public int getIcon() {
+        return mIcon;
     }
 
     @Override
