@@ -98,11 +98,30 @@ public class MusicService extends MediaBrowserService{
     private final class MediaSessionCallback extends MediaSession.Callback {
         String mMediaId = "";
 
+        Thread updateProgressThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    while(!Thread.currentThread().isInterrupted()) {
+                        Log.d(TAG, "update");
+                        if (mMediaPlayer.isPlaying())
+                            updatePosition(PlaybackState.STATE_PLAYING);
+                        Thread.sleep(1000);
+                    }
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+
+
         @Override
         public void onPlay() {
             Log.d(TAG, "play");
             mMediaPlayer.start();
             updatePlaybackState(mMediaId, PlaybackState.STATE_PLAYING);
+            if (!updateProgressThread.isAlive())
+                updateProgressThread.start();
         }
 
         @Override
@@ -131,6 +150,8 @@ public class MusicService extends MediaBrowserService{
         public void onPlayFromMediaId(final String mediaId, Bundle extras) {
             Log.d(TAG, "playFromMediaId mediaId:"+ mediaId+ "  extras="+ extras);
             mMediaId = mediaId;
+            if (!updateProgressThread.isAlive())
+                updateProgressThread.start();
             updatePlaybackState(mediaId, PlaybackState.STATE_BUFFERING);
             getMediaUrl(mediaId, new MusicReady() {
                 @Override
@@ -180,16 +201,18 @@ public class MusicService extends MediaBrowserService{
         };
 
 
-        @Override
-        public void onPause() {
+    @Override
+    public void onPause() {
             Log.d(TAG, "pause. ");
             mMediaPlayer.pause();
             updatePlaybackState(mMediaId, PlaybackState.STATE_PAUSED);
+            updateProgressThread.interrupt();
         }
 
         @Override
         public void onStop() {
             Log.d(TAG, "stop.");
+            updateProgressThread.interrupt();
         }
 
         @Override
@@ -263,6 +286,7 @@ public class MusicService extends MediaBrowserService{
 
         PlaybackState.Builder stateBuilder = new PlaybackState.Builder().setActions(getAvailableActions());
         stateBuilder.setState(state, mMediaPlayer.getCurrentPosition(), 1.0f, SystemClock.elapsedRealtime());
+
         if (PlaylistDatabaseHandler.isOnFavorites(this, item))
             stateBuilder.addCustomAction(ADD_TO_FAVORITES_ACTION, "fav", R.mipmap.star_on);
         else
@@ -271,6 +295,13 @@ public class MusicService extends MediaBrowserService{
         mSession.setPlaybackState(stateBuilder.build());
     }
 
+
+    private void updatePosition(int state){
+        PlaybackState.Builder stateBuilder = new PlaybackState.Builder().setActions(getAvailableActions());
+        stateBuilder.setState(state, mMediaPlayer.getCurrentPosition(), 1.0f, SystemClock.elapsedRealtime());
+
+        mSession.setPlaybackState(stateBuilder.build());
+    }
 
     private long getAvailableActions() {
         long actions = PlaybackState.ACTION_PLAY | PlaybackState.ACTION_PLAY_FROM_MEDIA_ID |

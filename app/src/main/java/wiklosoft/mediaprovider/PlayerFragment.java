@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 /**
@@ -24,6 +25,7 @@ public class PlayerFragment extends Fragment {
     private ImageView mArt = null;
     private OnPlaylistShow mOnPlaylistShow = null;
     private ImageButton mShowPlaylist = null;
+    private SeekBar mProgress = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -31,7 +33,7 @@ public class PlayerFragment extends Fragment {
 
         mPlay = (ImageButton) rootView.findViewById(R.id.play);
         mArt = (ImageView) rootView.findViewById(R.id.art);
-
+        mProgress = (SeekBar) rootView.findViewById(R.id.progress);
         mPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -68,12 +70,18 @@ public class PlayerFragment extends Fragment {
         if(state.getState() == PlaybackState.STATE_PLAYING)
             mPlay.setImageResource(R.drawable.pause);
 
+
+        mProgress.setProgress((int)(state.getPosition()/1000));
+
+
         //if(state.getState() == PlaybackState.STATE_BUFFERING)
         //    setTitle("Buffering...");
         //if(state.getState() == PlaybackState.STATE_CONNECTING)
         //    setTitle("Connecting...");
 
     }
+
+
 
     private void setTitle(String title){
         int titleId = getResources().getIdentifier("action_bar_title", "id", "android");
@@ -84,6 +92,12 @@ public class PlayerFragment extends Fragment {
     public void onMetadataChanged(MediaMetadata metadata) {
         String artist = metadata.getText(MediaMetadata.METADATA_KEY_ARTIST).toString();
         String title = metadata.getText(MediaMetadata.METADATA_KEY_TITLE).toString();
+
+        long duration = metadata.getLong(MediaMetadata.METADATA_KEY_DURATION);
+
+        mProgress.setMax((int)duration/1000);
+
+
         if (mArt != null) mArt.setImageBitmap(metadata.getBitmap(MediaMetadata.METADATA_KEY_ART));
 
         setTitle(artist + " " + title);

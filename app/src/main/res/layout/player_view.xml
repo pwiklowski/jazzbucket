@@ -1,66 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
               android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-                android:background="@color/blueish">
+              android:background="@null"
+                android:focusableInTouchMode="false">
 
-    <ImageButton
-        android:layout_width="70dp"
-        android:layout_height="60dp"
-        android:id="@+id/show_playlist"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_margin="5dp"
-        android:src="@drawable/playlist"
-        android:scaleType="fitCenter"
-        android:background="@null"
-        android:padding="10dp"/>
 
-    <ImageView
-        android:layout_width="70dp"
-        android:layout_height="70dp"
-        android:id="@+id/art"
-        android:layout_alignParentStart="true"/>
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:orientation="vertical"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                    android:background="@color/blueish"
+                    android:layout_gravity="bottom"
+                    android:layout_marginTop="14dp">
 
-    <ImageButton
-        android:layout_width="50dp"
-        android:layout_height="70dp"
-        android:id="@+id/previous"
-        android:src="@drawable/previous"
-        android:scaleType="center"
-        android:padding="15dp"
-        android:background="@null"
-        android:layout_alignParentTop="true"
-        android:layout_toStartOf="@+id/play"/>
+        <ImageButton
+            android:layout_width="70dp"
+            android:layout_height="60dp"
+            android:id="@+id/show_playlist"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_margin="5dp"
+            android:src="@drawable/playlist"
+            android:scaleType="fitCenter"
+            android:background="@null"
+            android:padding="10dp"/>
 
-    <ImageButton
-        android:layout_width="50dp"
-        android:layout_height="70dp"
-        android:id="@+id/next"
-        android:src="@drawable/next"
-        android:padding="15dp"
-        android:background="@null"
-        android:layout_alignParentTop="true"
-        android:layout_toEndOf="@+id/play"/>
+        <ImageView
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:id="@+id/art"
+            android:layout_alignParentStart="true"/>
 
-    <ImageView
-        android:layout_width="100dp"
-        android:layout_height="3dp"
-        android:id="@+id/imageView2"
-        android:background="#ffff6e00"/>
+        <ImageButton
+            android:layout_width="50dp"
+            android:layout_height="70dp"
+            android:id="@+id/previous"
+            android:src="@drawable/previous"
+            android:scaleType="center"
+            android:padding="15dp"
+            android:background="@null"
+            android:layout_alignParentTop="true"
+            android:layout_toStartOf="@+id/play"
+            android:paddingTop="10dp"/>
 
-    <ImageButton
-        android:layout_width="100dp"
-        android:layout_height="70dp"
-        android:text="Play"
-        android:id="@+id/play"
-        android:src="@drawable/play"
-        android:scaleType="fitCenter"
-        android:adjustViewBounds="false"
-        android:background="@null"
-        android:layout_gravity="center_horizontal"
-        android:layout_centerHorizontal="true"/>
+        <ImageButton
+            android:layout_width="50dp"
+            android:layout_height="70dp"
+            android:id="@+id/next"
+            android:src="@drawable/next"
+            android:padding="15dp"
+            android:background="@null"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/play"/>
+
+        <ImageButton
+            android:layout_width="100dp"
+            android:layout_height="70dp"
+            android:text="Play"
+            android:id="@+id/play"
+            android:src="@drawable/play"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="false"
+            android:background="@null"
+            android:layout_gravity="center_horizontal"
+            android:layout_centerHorizontal="true"/>
+
+    </RelativeLayout>
+
+    <SeekBar
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/progress"
+        android:layout_gravity="bottom"
+        android:thumb="@drawable/thumb"
+        android:progress="40"
+        android:thumbTint="#ffe36e00"
+        android:maxHeight="4dp"
+        android:paddingLeft="0px"
+        android:paddingRight="0px"
+        android:progressDrawable="@drawable/bar"/>
+
 
 </RelativeLayout>
