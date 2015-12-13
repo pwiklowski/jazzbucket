@@ -34,6 +34,25 @@ public class PlayerFragment extends Fragment {
         mPlay = (ImageButton) rootView.findViewById(R.id.play);
         mArt = (ImageView) rootView.findViewById(R.id.art);
         mProgress = (SeekBar) rootView.findViewById(R.id.progress);
+
+        mProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                long progress = mProgress.getProgress()*1000;
+                MediaController controller = getActivity().getMediaController();
+                controller.getTransportControls().seekTo(progress);
+            }
+        });
         mPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

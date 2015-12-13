@@ -83,6 +83,7 @@ public class MusicService extends MediaBrowserService{
         mPlayingQueue = new Queue(this, mSession.getController());
     }
 
+
     Queue getQueue(){
         return mPlayingQueue;
     }
@@ -103,7 +104,6 @@ public class MusicService extends MediaBrowserService{
             public void run() {
                 try {
                     while(!Thread.currentThread().isInterrupted()) {
-                        Log.d(TAG, "update");
                         if (mMediaPlayer.isPlaying())
                             updatePosition(PlaybackState.STATE_PLAYING);
                         Thread.sleep(1000);
@@ -132,6 +132,7 @@ public class MusicService extends MediaBrowserService{
         @Override
         public void onSeekTo(long position) {
             Log.d(TAG, "onSeekTo:"+ position);
+            mMediaPlayer.seekTo((int)position);
         }
 
 
