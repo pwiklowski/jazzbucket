@@ -22,7 +22,6 @@ import android.widget.TextView;
 public class PlayerFragment extends Fragment {
     private final String TAG = "PlayerFragment";
     private ImageButton mPlay = null;
-    private ImageView mArt = null;
     private OnPlaylistShow mOnPlaylistShow = null;
     private ImageButton mShowPlaylist = null;
     private SeekBar mProgress = null;
@@ -32,7 +31,6 @@ public class PlayerFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.player_view, container, false);
 
         mPlay = (ImageButton) rootView.findViewById(R.id.play);
-        mArt = (ImageView) rootView.findViewById(R.id.art);
         mProgress = (SeekBar) rootView.findViewById(R.id.progress);
 
         mProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -101,25 +99,9 @@ public class PlayerFragment extends Fragment {
     }
 
 
-
-    private void setTitle(String title){
-        int titleId = getResources().getIdentifier("action_bar_title", "id", "android");
-        TextView yourTextView = (TextView) getActivity().findViewById(titleId);
-        yourTextView.setText(title);
-    }
-
     public void onMetadataChanged(MediaMetadata metadata) {
-        String artist = metadata.getText(MediaMetadata.METADATA_KEY_ARTIST).toString();
-        String title = metadata.getText(MediaMetadata.METADATA_KEY_TITLE).toString();
-
         long duration = metadata.getLong(MediaMetadata.METADATA_KEY_DURATION);
-
         mProgress.setMax((int)duration/1000);
-
-
-        if (mArt != null) mArt.setImageBitmap(metadata.getBitmap(MediaMetadata.METADATA_KEY_ART));
-
-        setTitle(artist + " " + title);
     }
 
     public void setOnPlaylistShowListener(OnPlaylistShow listener){

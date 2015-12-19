@@ -20,10 +20,18 @@
 
             <FrameLayout
                 android:layout_width="match_parent"
+                android:layout_height="70dp"
+                android:layout_gravity="center_horizontal|bottom"
+                android:id="@+id/actionbar"
+                android:layout_alignParentTop="true">
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
                 android:layout_height="419dp"
                 android:id="@+id/container"
                 android:layout_above="@+id/player"
-                android:layout_alignParentTop="true">
+                android:layout_below="@+id/actionbar">
 
             </FrameLayout>
 

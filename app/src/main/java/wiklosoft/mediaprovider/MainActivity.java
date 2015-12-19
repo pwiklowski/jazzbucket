@@ -22,6 +22,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.DragEvent;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -49,6 +50,7 @@ public class MainActivity extends FragmentActivity implements NavigationDrawerFr
     private PlayerFragment mPlayerFragment = null;
     private MediaBrowser mMediaBrowser;
     private PlaylistFragment mPlaylistFragment = null;
+    private ActionBarFragment mActionBar = null;
     private MusicProvider mProvider = null;
     private String TAG = "MainActivity";
     private MusicService mMusicService = null;
@@ -67,7 +69,6 @@ public class MainActivity extends FragmentActivity implements NavigationDrawerFr
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setActionBarFont();
         setContentView(R.layout.activity_main);
 
         mNavigationDrawerFragment = (NavigationDrawerFragment) getFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -91,6 +92,19 @@ public class MainActivity extends FragmentActivity implements NavigationDrawerFr
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.player, mPlayerFragment).commit();
 
+        mActionBar = new ActionBarFragment();
+        mActionBar.setOnDrawerOpen(new ActionBarFragment.OnDrawerOpen() {
+            @Override
+            public void open(boolean open) {
+                if (open){
+                    mNavigationDrawerFragment.getDrawerLayout().openDrawer(Gravity.LEFT);
+                }else{
+                    mNavigationDrawerFragment.getDrawerLayout().closeDrawer(Gravity.LEFT);
+                }
+            }
+        });
+        getSupportFragmentManager().beginTransaction().replace(R.id.actionbar, mActionBar).commit();
+
 
         mPlayerFragment.setOnPlaylistShowListener(this);
 
@@ -99,13 +113,6 @@ public class MainActivity extends FragmentActivity implements NavigationDrawerFr
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(getResources().getColor(R.color.blueish_dark));
         window.setNavigationBarColor(getResources().getColor(R.color.blueish_dark));
-    }
-    void setActionBarFont(){
-        int titleId = getResources().getIdentifier("action_bar_title", "id", "android");
-        TextView yourTextView = (TextView) findViewById(titleId);
-        Typeface font2 =  Typeface.create("sans-serif-light", Typeface.NORMAL);
-        yourTextView.setTypeface(font2);
-        yourTextView.setTextSize(20);
     }
 
     private final MediaBrowser.ConnectionCallback mConnectionCallback = new MediaBrowser.ConnectionCallback() {
@@ -136,12 +143,18 @@ public class MainActivity extends FragmentActivity implements NavigationDrawerFr
             if (mPlayerFragment != null){
                 mPlayerFragment.onPlaybackStateChanged(state);
             }
+            if (mActionBar != null){
+                mActionBar.onPlaybackStateChanged(state);
+            }
         }
 
         @Override
         public void onMetadataChanged(MediaMetadata metadata) {
             if (mPlayerFragment != null){
                 mPlayerFragment.onMetadataChanged(metadata);
+            }
+            if (mActionBar != null){
+                mActionBar.onMetadataChanged(metadata);
             }
         }
     };
@@ -165,7 +178,7 @@ public class MainActivity extends FragmentActivity implements NavigationDrawerFr
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
-        Log.d(TAG,"onNavigationDrawerItemSelected "+ position);
+        Log.d(TAG, "onNavigationDrawerItemSelected " + position);
 
         if (position != NavigationDrawerFragment.SETTINGS_ID) {
             MusicProvider mp = mMusicProviderList.get(position);
@@ -181,14 +194,6 @@ public class MainActivity extends FragmentActivity implements NavigationDrawerFr
         }
     }
 
-
-    public void restoreActionBar() {
-        ActionBar actionBar = getActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setTitle(mTitle);
-    }
-
     @Override
     public void onShow(boolean show) {
         if (mPlaylistFragment == null) {
@@ -201,7 +206,6 @@ public class MainActivity extends FragmentActivity implements NavigationDrawerFr
                 R.anim.slide_in_bottom, R.anim.slide_out_bottom);
 
         if (mPlaylistFragment.isAdded()) {
-            //transaction.remove(mPlaylistFragment)..commit();
             getSupportFragmentManager().popBackStack();
             mPlaylistFragment = null;
         } else {
