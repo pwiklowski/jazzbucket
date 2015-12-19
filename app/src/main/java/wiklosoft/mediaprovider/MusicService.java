@@ -81,6 +81,8 @@ public class MusicService extends MediaBrowserService{
         mMediaPlayer = new MediaPlayer();
         mMusicService = this;
         mPlayingQueue = new Queue(this, mSession.getController());
+
+        mMediaPlayer.setOnCompletionListener(mOnCompletionListener);
     }
 
 
@@ -96,6 +98,12 @@ public class MusicService extends MediaBrowserService{
         return mMusicProviderList;
     }
 
+    MediaPlayer.OnCompletionListener mOnCompletionListener = new MediaPlayer.OnCompletionListener() {
+        @Override
+        public void onCompletion(MediaPlayer mediaPlayer) {
+            mSession.getController().getTransportControls().skipToNext();
+        }
+    };
     private final class MediaSessionCallback extends MediaSession.Callback {
         String mMediaId = "";
 

@@ -35,12 +35,12 @@ public class Queue {
     void playItem(MediaSession.QueueItem item){
         if (mQueueItems.indexOf(item) != -1)
             mCurrentItem = item;
-        mMediaController.getTransportControls().playFromMediaId(item.getDescription().getMediaId(), null);
+        mMediaController.getTransportControls().playFromMediaId(item.getDescription().getMediaId().replace("''", "'"), null);
     }
 
     void playItem(int id){
         mCurrentItem = mQueueItems.get(id);
-        mMediaController.getTransportControls().playFromMediaId(mCurrentItem.getDescription().getMediaId(), null);
+        mMediaController.getTransportControls().playFromMediaId(mCurrentItem.getDescription().getMediaId().replace("''","'"), null);
     }
 
     void remove(MediaSession.QueueItem item){
@@ -69,6 +69,12 @@ public class Queue {
 
 
     void playNext(){
+        int currentIndex = mQueueItems.indexOf(mCurrentItem);
+        if ((mQueueItems.size() -1) > currentIndex){
+            playItem(mQueueItems.get(currentIndex+1));
+        }else{
+            playItem(mQueueItems.get(0));
+        }
 
     }
     void playPrevious(){
