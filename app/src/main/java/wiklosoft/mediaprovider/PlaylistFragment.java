@@ -54,6 +54,25 @@ public class PlaylistFragment extends Fragment {
         mListView.hideTrashCan();
         return rootView;
     }
+    MusicService.QueueStateChanged mQueueStateChanged = new MusicService.QueueStateChanged() {
+        @Override
+        public void update() {
+            mPlaylistAdapter.notifyDataSetChanged();
+        }
+    };
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        mService.removeOnQueueStateChangedListener(mQueueStateChanged);
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        mService.addOnQueueStateChangedListener(mQueueStateChanged);
+    }
+
     private TouchInterceptor.DropListener mDropListener =
             new TouchInterceptor.DropListener() {
                 public void drop(int from, int to) {
