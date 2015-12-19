@@ -1,5 +1,7 @@
 package wiklosoft.mediaprovider;
 
+import android.graphics.Bitmap;
+import android.media.Image;
 import android.media.MediaMetadata;
 import android.media.session.MediaController;
 import android.media.session.PlaybackState;
@@ -25,12 +27,29 @@ public class PlayerFragment extends Fragment {
     private OnPlaylistShow mOnPlaylistShow = null;
     private ImageButton mShowPlaylist = null;
     private SeekBar mProgress = null;
+    private ImageButton mNext = null;
+    private ImageButton mPrevious = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.player_view, container, false);
 
         mPlay = (ImageButton) rootView.findViewById(R.id.play);
+        mNext = (ImageButton) rootView.findViewById(R.id.next);
+        mNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getActivity().getMediaController().getTransportControls().skipToNext();
+            }
+        });
+        mPrevious = (ImageButton) rootView.findViewById(R.id.previous);
+        mPrevious.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getActivity().getMediaController().getTransportControls().skipToPrevious();
+            }
+        });
+
         mProgress = (SeekBar) rootView.findViewById(R.id.progress);
 
         mProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -74,7 +93,6 @@ public class PlayerFragment extends Fragment {
                     mOnPlaylistShow.onShow(true);
             }
         });
-
 
         return rootView;
     }
