@@ -49,6 +49,7 @@ public class MusicService extends MediaBrowserService{
     private MediaPlayer mMediaPlayer;
     private String ADD_TO_FAVORITES_ACTION = "add_to_favorites_action";
 
+    private List<QueueStateChanged> mQueueStateChangedList = new ArrayList<>();
 
     @Override
     public void onCreate(){
@@ -230,7 +231,7 @@ public class MusicService extends MediaBrowserService{
             if (mPlayingQueue !=null){
                 mPlayingQueue.playNext();
             }
-
+            notifyQueueStateChangedListeners();
         }
 
         @Override
@@ -239,6 +240,7 @@ public class MusicService extends MediaBrowserService{
             if (mPlayingQueue !=null){
                 mPlayingQueue.playPrevious();
             }
+            notifyQueueStateChangedListeners();
         }
 
         @Override
@@ -360,5 +362,21 @@ public class MusicService extends MediaBrowserService{
             result.detach();
             p.getChildren(s, result);
         }
+    }
+
+    public void addOnQueueStateChangedListener(QueueStateChanged listener){
+        mQueueStateChangedList.add(listener);
+    }
+    public void removeOnQueueStateChangedListener(QueueStateChanged listener){
+        mQueueStateChangedList.remove(listener);
+    }
+    public void notifyQueueStateChangedListeners(){
+        for(QueueStateChanged listener: mQueueStateChangedList)
+            listener.update();
+    }
+
+    interface QueueStateChanged
+    {
+        void update();
     }
 }
